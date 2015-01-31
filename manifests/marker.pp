@@ -1,1 +1,0 @@
-define resource_tree::marker () { }
