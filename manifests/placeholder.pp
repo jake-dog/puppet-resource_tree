@@ -1,1 +1,1 @@
-define resource_tree::placeholder () { }
+define resource_tree::placeholder () { notice("Created") }
