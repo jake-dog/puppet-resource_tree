@@ -14,6 +14,9 @@ define resource_tree::resource (
 
   resource_tree::placeholder{ "$name": }
   
+  # Allow arbitrary commands and nested yaml
+  $parsed_params = parseyaml(inline_template('<%= Hash[@params.map {|k,v| ((k.start_with? "rt_parse::") && [k[10..-1], YAML.load(((v.start_with? "rt_eval::") && eval(v[9..-1])) || v)]) || [k,((v.start_with? "rt_eval::") && eval(v[9..-1])) || v] }].to_yaml %>'))
+  
   if $rt_notify {
     if has_key($rt_notify, 'exec') {
       $exec_notify = [Exec[$rt_notify['exec']]]
@@ -36,15 +39,15 @@ define resource_tree::resource (
     $all_notify = concat(concat($exec_notify,$mount_notify),$service_notify)
     
     if $rt_requires {
-      create_resources($type, $params, { 'before' => Resource_tree::Placeholder[$name], 'require' => Resource_tree::Placeholder[$rt_requires], 'notify' => $all_notify })
+      create_resources($type, $parsed_params, { 'before' => Resource_tree::Placeholder[$name], 'require' => Resource_tree::Placeholder[$rt_requires], 'notify' => $all_notify })
     } else {
-      create_resources($type, $params, { 'before' => Resource_tree::Placeholder[$name], 'notify' => $all_notify })
+      create_resources($type, $parsed_params, { 'before' => Resource_tree::Placeholder[$name], 'notify' => $all_notify })
     }
   } else {
     if $rt_requires {
-      create_resources($type, $params, { 'before' => Resource_tree::Placeholder[$name], 'require' => Resource_tree::Placeholder[$rt_requires] })
+      create_resources($type, $parsed_params, { 'before' => Resource_tree::Placeholder[$name], 'require' => Resource_tree::Placeholder[$rt_requires] })
     } else {
-      create_resources($type, $params, { 'before' => Resource_tree::Placeholder[$name] })
+      create_resources($type, $parsed_params, { 'before' => Resource_tree::Placeholder[$name] })
     }
   }
 }
