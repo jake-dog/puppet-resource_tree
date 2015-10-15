@@ -1,0 +1,52 @@
+<%=
+  @allcollections.reject {|k,v|
+
+    ## Reject collections that are not in apply array
+    !(@allapply.include? k)
+    
+  }.map{|k,v|
+  
+    ## Evaluate any collections whose value is a string,
+    ## returning only the resulting collections.
+    ((v.to_s == v) && eval(v)) || v
+    
+  }.inject({}) {|a,b|
+  
+    ## Deep merge first level of collections,
+    ## evaluating any resource types whose value is a string
+    a.merge(Hash[(a.keys & b.keys).map {|k| 
+      [k,(((a[k].to_s == a[k]) && eval(a[k])) || a[k]).merge(((b[k].to_s == b[k]) && eval(b[k])) || b[k])] 
+    }]).merge(b.reject {|k,v| 
+      (a.keys & b.keys).include? k 
+    })
+    
+  }.map {|k,v|
+  
+    ## Evaluate individual resources whose value is a string,
+    ## while reformatting each in resource_tree::resource syntax
+    Hash[(((v.to_s == v) && eval(v)) || v).map {|a,b| 
+      [a, (((b.to_s == b) && eval(b)) || b)] 
+    }.map {|a,b| 
+      [ k+"-"+a,
+        {
+          "type" => k, 
+          "rt_notify" => b.fetch("rt_notify",nil), 
+          "rt_requires" => b.fetch("rt_requires",nil), 
+          "rt_resources" => b.fetch("rt_resources",nil),
+          "params" => {
+            a => b.reject {|x,y| 
+              ["rt_resources", "rt_requires", "rt_notify"].include? x 
+            }
+          }
+        }
+      ]
+    }]
+    
+  }.flatten(1).inject({}) {|a,b|
+  
+    ## Merge hash of resources by type into a single
+    ## hash of resource_tree::resource objects
+    a.merge(b)
+    
+  }.to_yaml
+%>

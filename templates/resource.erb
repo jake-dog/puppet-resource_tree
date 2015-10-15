@@ -1,0 +1,32 @@
+<%=
+  ## Evaluate rt_resources if value is a string
+  (((@rt_resources.to_s == @rt_resources) && eval(@rt_resources)) || @rt_resources).map {|k,v|
+
+    ## Evaluate individual resources whose value is a string,
+    ## while reformatting each in resource_tree::resource syntax
+    Hash[(((v.to_s == v) && eval(v)) || v).map {|a,b| 
+      [a, (((b.to_s == b) && eval(b)) || b)] 
+    }.map {|a,b| 
+      [ k+"-"+a,
+        {
+          "type" => k, 
+          "rt_notify" => b.fetch("rt_notify",nil), 
+          "rt_requires" => b.fetch("rt_requires",nil), 
+          "rt_resources" => b.fetch("rt_resources",nil),
+          "params" => {
+            a => b.reject {|x,y| 
+              ["rt_resources", "rt_requires", "rt_notify"].include? x 
+            }
+          }
+        }
+      ]
+    }]
+    
+  }.flatten(1).inject({}) {|a,b|
+    
+    ## Merge hash of resources by type into a single
+    ## hash of resource_tree::resource objects
+    a.merge(b)
+    
+  }.to_yaml
+%>
