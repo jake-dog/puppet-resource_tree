@@ -1,29 +1,34 @@
-<%=
-  @allcollections.reject {|k,v|
-
-    ## Reject collections that are not in apply array
+<%# Reject collections that are not in resource_tree::apply -%>
+<%
+  apply_collections = @allcollections.reject {|k,v|
     !(@allapply.include? k)
-    
-  }.map{|k,v|
-  
-    ## Evaluate any collections whose value is a string,
-    ## returning only the resulting collections.
+  }
+-%>
+
+<%# Evaluate any collections whose value is a string, -%>
+<%# returning only the resulting collections. -%>
+<%
+  parsed_collections = apply_collections.map{|k,v|
     ((v.to_s == v) && eval(v)) || v
-    
-  }.inject({}) {|a,b|
-  
-    ## Deep merge first level of collections,
-    ## evaluating any resource types whose value is a string
+  }
+-%>
+
+<%# Deep merge first level of collections, -%>
+<%# evaluating any resource types whose value is a string -%>
+<%
+  resources = parsed_collections.inject({}) {|a,b|
     a.merge(Hash[(a.keys & b.keys).map {|k| 
       [k,(((a[k].to_s == a[k]) && eval(a[k])) || a[k]).merge(((b[k].to_s == b[k]) && eval(b[k])) || b[k])] 
     }]).merge(b.reject {|k,v| 
       (a.keys & b.keys).include? k 
     })
-    
-  }.map {|k,v|
-  
-    ## Evaluate individual resources whose value is a string,
-    ## while reformatting each in resource_tree::resource syntax
+  }
+-%>
+
+<%# Evaluate individual resources whose value is a string, -%>
+<%# while reformatting each in resource_tree::resource syntax -%>
+<%
+  resources_by_type = resources.map {|k,v|
     Hash[(((v.to_s == v) && eval(v)) || v).map {|a,b| 
       [a, (((b.to_s == b) && eval(b)) || b)] 
     }.map {|a,b| 
@@ -41,12 +46,13 @@
         }
       ]
     }]
-    
-  }.flatten(1).inject({}) {|a,b|
-  
-    ## Merge hash of resources by type into a single
-    ## hash of resource_tree::resource objects
+  }
+-%>
+
+<%# Merge hash of resources by type into a single -%>
+<%# hash of resource_tree::resource objects -%>
+<%=
+  resources_by_type.flatten(1).inject({}) {|a,b|
     a.merge(b)
-    
   }.to_yaml
 %>
