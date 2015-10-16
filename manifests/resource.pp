@@ -8,7 +8,7 @@ define resource_tree::resource (
   include stdlib
   
   if $rt_resources {
-      $uniq_resources = parseyaml(inline_template('<%= (((@rt_resources.to_s == @rt_resources) && eval(@rt_resources)) || @rt_resources).map {|k,v| Hash[(((v.to_s == v) && eval(v)) || v).map {|a,b| [a, (((b.to_s == b) && eval(b)) || b)] }.map {|a,b| [k+"-"+a,{"type" => k, "rt_notify" => b.fetch("rt_notify",nil), "rt_requires" => b.fetch("rt_requires",nil), "rt_resources" => b.fetch("rt_resources",nil),"params" => {a=>b.reject {|x,y| ["rt_resources", "rt_requires", "rt_notify"].include? x }}}]}] }.flatten(1).inject({}) {|a,b| a.merge(b) }.to_yaml %>'))
+      $uniq_resources = parseyaml(template('resource_tree/resource.erb'))
       create_resources('resource_tree::resource', $uniq_resources, { 'require' => Resource_tree::Placeholder[$name] })
   }
 
