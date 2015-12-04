@@ -148,4 +148,35 @@ describe 'resource_tree', :type => :class do
       should contain_resource_tree__resource('file-/tmp/test/test-file-5').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
     end
   end
+  
+  context 'with multiple collections' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content1" => {
+            "file" => {
+              "/tmp/date_test1" => {
+                "content" => Time.now.day
+              }
+            }
+          },
+          "static_content2" => {
+            "file" => {
+              "/tmp/date_test2" => {
+                "content" => Time.now.day
+              }
+            }
+          }
+        },
+        :apply => ["static_content1", "static_content2"]
+      }
+    }
+
+    it 'should contain two files with the current day number' do
+      should contain_file('/tmp/date_test1') \
+        .with_content(Time.now.day)
+      should contain_file('/tmp/date_test2') \
+        .with_content(Time.now.day)
+    end
+  end
 end
