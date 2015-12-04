@@ -1,6 +1,6 @@
 class resource_tree (
-  $collections       = {},
-  $apply = [],
+  $collections    = {},
+  $apply          = [],
 ) {
   $allcollections = hiera_hash('resource_tree::collections', $collections)
   $allapply = hiera_array('resource_tree::apply', $apply)

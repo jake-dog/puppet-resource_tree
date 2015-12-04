@@ -1,9 +1,9 @@
 define resource_tree::resource (
     $type,
     $params,
-    $rt_requires = undef,
-    $rt_notify = undef,
-    $rt_resources = undef,
+    $rt_requires    = undef,
+    $rt_notify      = undef,
+    $rt_resources   = undef,
 ) {
   include stdlib
   
