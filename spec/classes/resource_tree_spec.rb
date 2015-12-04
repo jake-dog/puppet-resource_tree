@@ -303,4 +303,61 @@ describe 'resource_tree', :type => :class do
         .that_notifies('Service[httpd]')
     end
   end
+  
+  context 'file with multiple notifies' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/date_test" => {
+                "content" => Time.now.day,
+                "rt_notify" => {
+                  "service" => [ "httpd", "rsyslog" ],
+                  "exec"    => "create_test"
+                }
+              }
+            },
+            "service" => {
+              "httpd" => {
+                "ensure" => "running"
+              },
+              "rsyslog" => {
+                "ensure" => "running"
+              }
+            },
+            "exec" => {
+              "create_test" => {
+                "command" => "/bin/mkdir /tmp/test"
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should have a file' do
+      should contain_file('/tmp/date_test') \
+        .with_content(Time.now.day)
+    end
+    
+    it 'should have services' do
+      should contain_service('httpd')
+      should contain_service('rsyslog')
+    end
+    
+    it 'should have a exec' do
+      should contain_exec('create_test')
+    end
+    
+    it 'should have a file notifying services and exec' do
+      should contain_file('/tmp/date_test') \
+        .that_notifies('Service[httpd]')
+      should contain_file('/tmp/date_test') \
+        .that_notifies('Service[rsyslog]')
+      should contain_file('/tmp/date_test') \
+        .that_notifies('Exec[create_test]')
+    end
+  end
 end
