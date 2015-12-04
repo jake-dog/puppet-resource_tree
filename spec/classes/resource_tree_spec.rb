@@ -114,4 +114,38 @@ describe 'resource_tree', :type => :class do
         .with({ 'ip' => '192.168.1.5', 'ensure' => 'present' })
     end
   end
+  
+  context 'with dynamic resources and dependencies' do
+    let(:params) {
+      {
+        :collections => {
+          "dynamic_resources" => {
+            'file' => {
+              '/tmp/test' => {
+                'ensure' => 'directory',
+                'rt_resources' => %q({
+                  'file' => Hash[(1..5).map {|n|
+                     [
+                       "/tmp/test/test-file-" + n.to_s,
+                       { "content" => rand(500).to_s }
+                     ]
+                   }]
+                })
+              }
+            }
+          }
+        },
+        :apply => ["dynamic_resources"]
+      }
+    }
+
+    it 'should contain 5 files dependent on 1 file' do
+      should contain_file('/tmp/test').that_comes_before('Resource_tree::Placeholder[file-/tmp/test]')
+      should contain_resource_tree__resource('file-/tmp/test/test-file-1').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
+      should contain_resource_tree__resource('file-/tmp/test/test-file-2').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
+      should contain_resource_tree__resource('file-/tmp/test/test-file-3').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
+      should contain_resource_tree__resource('file-/tmp/test/test-file-4').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
+      should contain_resource_tree__resource('file-/tmp/test/test-file-5').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
+    end
+  end
 end
