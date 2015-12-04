@@ -13,6 +13,8 @@ describe 'resource_tree', :type => :class do
   
   it { should have_resource_count(0) }
   
+  at_exit { RSpec::Puppet::Coverage.report! }
+  
   context 'with static content' do
     let(:params) { 
       {
@@ -358,6 +360,79 @@ describe 'resource_tree', :type => :class do
         .that_notifies('Service[rsyslog]')
       should contain_file('/tmp/date_test') \
         .that_notifies('Exec[create_test]')
+    end
+  end
+  
+  context 'with requires' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/check_date.sh" => {
+                "content" => "date -u | logger",
+                "mode"    => "0755"
+              }
+            },
+            "cron" => {
+              "run_date_check" => {
+                "command"     => "/tmp/check_date.sh",
+                "hour"        => "*",
+                "rt_requires" => "file-/tmp/check_date.sh"
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should contain a script' do
+      should contain_file('/tmp/check_date.sh') \
+        .with_content("date -u | logger")
+    end
+    
+    it 'should have a cron requiring a script' do
+      should contain_cron('run_date_check').that_requires('Resource_tree::Placeholder[file-/tmp/check_date.sh]')
+    end
+  end
+  
+  context 'with multiple requires' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/check_date.sh" => {
+                "content" => "date -u > /tmp/test/date.log",
+                "mode"    => "0755"
+              },
+              "/tmp/test" => {
+                "ensure" => "directory",
+              }
+            },
+            "cron" => {
+              "run_date_check" => {
+                "command"     => "/tmp/check_date.sh",
+                "hour"        => "*",
+                "rt_requires" => [ "file-/tmp/check_date.sh", "file-/tmp/test" ]
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should contain a directory and script' do
+      should contain_file('/tmp/check_date.sh') \
+        .with_content("date -u > /tmp/test/date.log")
+      should contain_file('/tmp/test')
+    end
+    
+    it 'should have a cron requiring a script' do
+      should contain_cron('run_date_check').that_requires('Resource_tree::Placeholder[file-/tmp/check_date.sh]')
+      should contain_cron('run_date_check').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
     end
   end
 end
