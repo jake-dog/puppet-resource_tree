@@ -11,6 +11,8 @@ describe 'resource_tree', :type => :class do
   #it { should compile }
   it { should contain_class('resource_tree')}
   
+  it { should have_resource_count(0) }
+  
   context 'with static content' do
     let(:params) { 
       {
@@ -177,6 +179,128 @@ describe 'resource_tree', :type => :class do
         .with_content(Time.now.day)
       should contain_file('/tmp/date_test2') \
         .with_content(Time.now.day)
+    end
+  end
+  
+  context 'with selecting one collection from multiple' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content1" => {
+            "file" => {
+              "/tmp/date_test1" => {
+                "content" => Time.now.day
+              }
+            }
+          },
+          "static_content2" => {
+            "file" => {
+              "/tmp/date_test2" => {
+                "content" => Time.now.day
+              }
+            }
+          }
+        },
+        :apply => ["static_content1"]
+      }
+    }
+
+    it 'should contain a file with the current day number' do
+      should contain_file('/tmp/date_test1') \
+        .with_content(Time.now.day)
+    end
+    
+    it 'should not contain another file with current day' do
+      not contain_file('/tmp/date_test2')
+    end
+  end
+  
+  context 'with selecting none existent collection' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content1" => {
+            "file" => {
+              "/tmp/date_test1" => {
+                "content" => Time.now.day
+              }
+            }
+          },
+          "static_content2" => {
+            "file" => {
+              "/tmp/date_test2" => {
+                "content" => Time.now.day
+              }
+            }
+          }
+        },
+        :apply => ["not_a_collection"]
+      }
+    }
+
+    it 'should have no resources' do
+      should have_resource_count(0)
+    end
+  end
+  
+  context 'with inline ruby evaluation' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/date_test" => {
+                "content" => "rt_eval::Time.now.day"
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should contain a file with the current day number' do
+      should contain_file('/tmp/date_test') \
+        .with_content(Time.now.day)
+    end
+  end
+  
+  context 'file with notify' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/date_test" => {
+                "content" => Time.now.day,
+                "rt_notify" => {
+                  "service" => "httpd"
+                }
+              }
+            },
+            "service" => {
+              "httpd" => {
+                "ensure" => "running"
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should have a file' do
+      should contain_file('/tmp/date_test') \
+        .with_content(Time.now.day)
+    end
+    
+    it 'should have a service' do
+      should contain_service('httpd')
+    end
+    
+    it 'should have a file notifying a service' do
+      should contain_file('/tmp/date_test') \
+        .that_notifies('Service[httpd]')
     end
   end
 end
