@@ -13,15 +13,17 @@ A trivial example of such a resource collection would be an `index.html` running
 Where the aformentioned `file` resource objects would be written in puppet code like so:
 
 ```ruby
-file { ['/var/www', '/var/www/html']:
-  ensure => 'directory',
-}
-
-file { '/var/www/html/index.html':
-  content => 'hello world!',
-  group => 'apache',
-  owner => 'apache',
-  require => File[['/var/www', '/var/www/html']],
+file {
+  '/var/www':
+    ensure  => 'directory';
+    
+  '/var/www/html':
+    ensure  => 'directory';
+    
+  '/var/www/html/index.html':
+    content => 'hello world!',
+    group   => 'apache',
+    owner   => 'apache';
 }
 ```
 
@@ -33,16 +35,14 @@ resource_tree::collections:
     file: # resource type
       '/var/www': # resource name
         ensure: 'directory' # resource parameter
-        rt_resources: # child resources
-          file: # resource type
-            '/var/www/html': # resource name
-              ensure: 'directory' # resource parameter
-              rt_resources: # child resources
-                file: # resource type
-                  '/var/www/html/index.html': # resource name
-                    content: 'hello world!' # resource parameter
-                    group: 'apache' # resource parameter
-                    owner: 'apache' # resource parameter
+      
+      '/var/www/html': # resource name
+        ensure: 'directory' # resource parameter
+      
+      '/var/www/html/index.html': # resource name
+        content: 'hello world!' # resource parameter
+        group: 'apache' # resource parameter
+        owner: 'apache' # resource parameter
 ```
 
 The collection would only be applied to a node if `resource_tree::apply`, an array, contains the value `httpd_index_file` in the local hiera scope.  This allows the author to have a shared set of Resource Tree collections, but only apply the desired collections to a given node.
