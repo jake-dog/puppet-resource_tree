@@ -1,4 +1,4 @@
-Resource Tree Puppet Module
+Resource Tree Puppet Module [![Build Status](https://travis-ci.org/jake-dog/puppet-resource_tree.svg?branch=master)](https://travis-ci.org/jake-dog/puppet-resource_tree)
 ===========================
 A puppet swiss army knife, bridging the gap between code and configuration, making ad hoc modifications a bit more elegant.
 
