@@ -11,8 +11,6 @@ rvm:
 gemfile: Gemfile
 env:
   matrix:
-    - PUPPET_GEM_VERSION="~> 3.0.0"
-    - PUPPET_GEM_VERSION="~> 3.3.0"
     - PUPPET_GEM_VERSION="~> 3.7.1"
 email: false
 
