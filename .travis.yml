@@ -12,5 +12,4 @@ gemfile: Gemfile
 env:
   matrix:
     - PUPPET_GEM_VERSION="~> 3.7.1"
-email: false
 
