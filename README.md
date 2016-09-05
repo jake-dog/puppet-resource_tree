@@ -2,6 +2,14 @@ Resource Tree Puppet Module [![Build Status](https://travis-ci.org/jake-dog/pupp
 ===========================
 A puppet swiss army knife, bridging the gap between code and configuration, making ad hoc modifications a bit more elegant.
 
+Motivation
+==========
+Most modern puppet deployments are composed of puppetlabs/r10k, puppetlabs/hiera and an external node classifier.  Although the design is powerful and versioned, it doesn't leave much room for the reality of ad hoc configurations.  Often times puppet users find themselves adding a module, or editing an existing module, just to create a file or add a single package, which leads to an r10k push to every relevant environment.  The addition of a single missing resource can result in several commits, new repositories and a bunch of individual changes to production environments.
+
+Resource Tree aims to drastically reduce the complexity of ad hoc configurations in puppet by providing a simple mechanism to define puppet resources, and relationships between those resources, entirely in hieradata.
+
+Of course Resource Tree's capabilities extend far beyond defining individual resources, enabling users to do terrible blasphemous things to puppet.  Therefore it is highly advisable to keep Resource Tree configurations short and sweet, and avoid writing collections which would be better suited to a module.
+
 Operating Principle
 ===================
 Resource Tree is ideal for building simple collections of puppet resources, both user defined and [built-ins](https://docs.puppetlabs.com/references/latest/type.html), which have logical relationships to each other.
@@ -45,17 +53,57 @@ resource_tree::collections:
         owner: 'apache' # resource parameter
 ```
 
-The collection would only be applied to a node if `resource_tree::apply`, an array, contains the value `httpd_index_file` in the local hiera scope.  This allows the author to have a shared set of Resource Tree collections, but only apply the desired collections to a given node.
+The collection would only be applied to a node if `resource_tree::apply`, an array, contains the value `httpd_index_file` in the local hiera scope.  This allows the author to have a shared set of Resource Tree collections, but only apply the desired collections to a given node.  For instance:
 
-Each resource in the tree implicitly requires any resources closer to the root of the tree, eg. `/var/www/html` implicitly requires `/var/www` in the previous example.
+```yaml
+resource_tree::apply:
+  - httpd_index_file
+```
 
-Resource tree allows three special parameters for each resource:
+Each resource in the tree may optionally contain an `rt_resources` parameter, where any included resources implicitly require those closer to the root of the tree.  For instance in the following example an apache configuration file implicitly requires the httpd package:
+
+```yaml
+resource_tree::collections:
+  apache:
+    package:
+      'httpd':
+        ensure: 'installed'
+        rt_resources:
+          file:
+            '/etc/httpd/conf.d/status.load':
+              ensure: 'present'
+              owner: 'apache'
+              group: 'apache'
+              content: 'LoadModule status_module "modules/mod_status.so"'
+              rt_notify:
+                service: 'httpd'
+```
+
+Relationships between resources in the tree can also be explicitly stated using the `rt_requires` parameter, with the caveat that required resources must be declared in a Resource Tree collection.  For instance the previous example could be rewritten with explicit relationships:
+
+```yaml
+resource_tree::collections:
+  apache:
+    package:
+      'httpd':
+        ensure: 'installed'
+    file:
+      '/etc/httpd/conf.d/status.load':
+        ensure: 'present'
+        owner: 'apache'
+        group: 'apache'
+        content: 'LoadModule status_module "modules/mod_status.so"'
+        rt_requires:
+          - 'package-httpd'
+        rt_notify:
+          service: 'httpd'
+```
+
+Resource tree contains three special parameters for each resource:
         
 + `rt_resources` - declare additional resources which require the current resource
 + `rt_requires` - explicitly require a resource_tree resource which is not parent to the current resource
 + `rt_notify` - notify a service, mount or exec declared in the catalog when current resource changes
-
-Although Resource Tree enables users to do terrible blasphemous things to puppet, it's highly advisable to keep Resource Tree configurations short and sweet.  Avoid writing collections which would be better suited to a module.
 
 Advanced Usage
 ==============
@@ -96,3 +144,66 @@ resource_tree::collections:
 ```
 
 Additionally individual resource parameters can be evaluated by prefixing them with `rt_eval::` and parsed as yaml by prefixing the paramater name as `rt_parse`.
+
+Crazy Advanced Usage
+====================
+A few intrepid users have discovered interesting ways to combine Resource Tree and ruby to dynamically create resources, including querying puppetdb to find members for proxies/load-balancers.  Here are a few tricks that tip the scales for what Resource Tree can do.
+
+#### Emulating `hiera_include('classes')`
+
+```yaml
+resource_tree::collections:
+  hiera_include:
+    class: |
+      Hash[(scope.function_hiera_array(['classes']) - ['resource_tree']).map {|c| [c, {}] }]
+```
+
+#### Using PuppetDB to discover puppetlabs/puppetlabs-haproxy balancer members
+
+```yaml
+resource_tree::collections:
+  haproxy_webservers:
+    haproxy::balancermember: |
+      member_ip_by_cert = scope.function_query_facts(["environment='%{environment}' and app='webserver'", [:ipaddress]])
+      {
+        "webservers" => {
+          "listening_service" => 'webservers',
+          "ports"             => '80',
+          "server_names"      => member_ip_by_cert.map{|k,v| k.split(".")[0] },
+          "ipaddresses"       => member_ip_by_cert.map{|k,v| v["ipaddress"] },
+          "options"           => [ 'check' ]
+        }
+      }
+```
+
+#### Creating multiple files with templates
+
+```yaml
+config_file_template: |
+  <% config = scope.function_hiera(['configs', {}]).fetch(@name[5..-1], {}) -%>
+  foo=<%= config["foo"] %>
+  biz=<%= config["biz"] %>
+
+configs:
+  '/etc/example/default.properties':
+    foo: 'boz'
+    biz: 'bar'
+  '/etc/example/example.properties':
+    foo: 'bar'
+    biz: 'boz'
+
+resource_tree::collections:
+  apply_configs:
+    file: |
+      Hash[scope.function_hiera(['configs']).map {|k,v|
+        [
+          "#{k}",
+          {
+            'ensure'  => 'present',
+            'owner'   => 'root',
+            'group'   => 'root',
+            'content' => 'rt_eval::scope.function_inline_template([scope.function_hiera(["config_file_template"])])'
+          }
+        ]
+      }]
+```
