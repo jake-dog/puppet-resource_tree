@@ -60,7 +60,7 @@ resource_tree::apply:
   - httpd_index_file
 ```
 
-Each resource in the tree may optionally contain an `rt_resources` parameter, where any included resources implicitly require those closer to the root of the tree.  For instance in the following example an apache configuration file implicitly requires the httpd package:
+Each resource in the tree may optionally contain an `rt_resources` parameter, where any included resources implicitly require those closer to the root of the tree.  For instance in the following example an apache configuration file and service implicitly require the httpd package:
 
 ```yaml
 resource_tree::collections:
