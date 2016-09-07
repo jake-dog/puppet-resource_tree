@@ -1,0 +1,27 @@
+{
+  "name": "jake-resource_tree",
+  "version": "0.0.8",
+  "author": "jake",
+  "license": "Apache-2.0",
+  "summary": "Puppet swiss army knife",
+  "source": "https://github.com/jake-dog/puppet-resource_tree",
+  "project_page": "https://github.com/jake-dog/puppet-resource_tree",
+  "issues_url": "https://github.com/jake-dog/puppet-resource_tree/issues",
+  "tags": [],
+  "operatingsystem_support": [
+    {
+      "operatingsystem":"RedHat",
+      "operatingsystemrelease":[ "6.0", "7.0" ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [ "12.04", "10.04", "14.04" ]
+    }
+  ],
+  "dependencies": [
+    { "name": "puppetlabs/stdlib", "version_requirement": ">=4.0.0 <5.0.0" }
+  ],
+  "requirements": [
+    { "name": "puppet", "version_requirements": ">=3.6.0 < 5.0.0" }
+  ]
+}
