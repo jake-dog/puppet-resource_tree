@@ -69,6 +69,9 @@ resource_tree::collections:
       'httpd':
         ensure: 'installed'
         rt_resources:
+          service:
+            'httpd':
+              ensure: 'running'
           file:
             '/etc/httpd/conf.d/status.load':
               ensure: 'present'
@@ -87,6 +90,11 @@ resource_tree::collections:
     package:
       'httpd':
         ensure: 'installed'
+    service:
+      'httpd:
+        ensure: 'running'
+        rt_requires:
+          - 'package-httpd'
     file:
       '/etc/httpd/conf.d/status.load':
         ensure: 'present'
