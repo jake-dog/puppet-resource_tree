@@ -151,7 +151,7 @@ resource_tree::collections:
       }]
 ```
 
-Additionally individual resource parameters can be evaluated by prefixing them with `rt_eval::` and parsed as yaml by prefixing the paramater name as `rt_parse`.
+Additionally individual resource parameters can be evaluated by prefixing them with `rt_eval::`, and parsed as yaml by prefixing the paramater name with `rt_parse::`.
 
 Crazy Advanced Usage
 ====================
