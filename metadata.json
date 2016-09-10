@@ -1,9 +1,9 @@
 {
   "name": "jake-resource_tree",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "author": "jake",
   "license": "Apache-2.0",
-  "summary": "Puppet swiss army knife",
+  "summary": "Create Puppet resources dynamically in Hiera",
   "source": "https://github.com/jake-dog/puppet-resource_tree",
   "project_page": "https://github.com/jake-dog/puppet-resource_tree",
   "issues_url": "https://github.com/jake-dog/puppet-resource_tree/issues",
