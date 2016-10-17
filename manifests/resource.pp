@@ -13,7 +13,7 @@ define resource_tree::resource (
   }
 
   # Ignore "before" requirement when "type" is exported
-  if $type.match(/^[@][@]/) {
+  if $type =~ /^[@][@]/ {
     $before = []
   } else {
     resource_tree::placeholder{ "$name": }
