@@ -16,7 +16,7 @@ define resource_tree::resource (
   if $type =~ /^[@][@]/ {
     $before = []
   } else {
-    resource_tree::placeholder{ "$name": }
+    resource_tree::placeholder{ $name: }
     $before = [Resource_tree::Placeholder[$name]]
   }
   
