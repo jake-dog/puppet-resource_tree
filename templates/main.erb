@@ -39,9 +39,9 @@
           "rt_requires" => b.fetch("rt_requires",nil), 
           "rt_resources" => b.fetch("rt_resources",nil),
           "params" => {
-            a => b.reject {|x,y| 
+            a => @defaults.fetch(k,{}).merge(b.reject {|x,y|
               ["rt_resources", "rt_requires", "rt_notify"].include? x 
-            }
+            })
           }
         }
       ]
