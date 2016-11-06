@@ -113,6 +113,26 @@ Resource tree contains three special parameters for each resource:
 + `rt_requires` - explicitly require a resource_tree resource which is not parent to the current resource
 + `rt_notify` - notify a service, mount or exec declared in the catalog when current resource changes
 
+Default Parameters
+==================
+Users may provide default parameters for resources declared via Resource Tree.  This can greatly reduce repetition of parameters when declaring many resources of the same type.
+
+In puppet we would define default parameters for `Package` resources like so:
+
+```ruby
+Package {
+  provider => 'yum'
+}
+```
+
+In Resource Tree we would declare it similarly:
+
+```yaml
+resource_tree::default_params:
+  package:
+    provider: 'yum'
+```
+
 Advanced Usage
 ==============
 Resource Tree provides a number of advanced features so collections can be built dynamically.  Any individual resource definition, resource collection, or collection of child resources which is a string will be evaluated as ruby code, eg.
