@@ -435,4 +435,67 @@ describe 'resource_tree', :type => :class do
       should contain_cron('run_date_check').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
     end
   end
+
+  context 'with default params' do
+    let(:params) {
+      {
+        :default_params => {
+          "file" => {
+            "mode" => '0600'
+          }
+        },
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/test1" => {
+                "content" => "foo"
+              },
+              "/tmp/test2" => {
+                "content" => "foo"
+              },
+              "/tmp/test3" => {
+                "content" => "foo"
+              },
+              "/tmp/test4" => {
+                "content" => "foo"
+              },
+              "/usr/local/bin/foo" => {
+                "content" => "echo bar",
+                "mode"    => '0755',
+                "rt_resources" => {
+                  "file" => {
+                    "/etc/cron.daily/run_foo" => {
+                      "content" => "/bin/bash /usr/local/bin/foo"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should contain files with mode=0600' do
+      should contain_file('/tmp/test1') \
+        .with_mode('0600')
+      should contain_file('/tmp/test2') \
+        .with_mode('0600')
+      should contain_file('/tmp/test3') \
+        .with_mode('0600')
+      should contain_file('/tmp/test4') \
+        .with_mode('0600')
+    end
+
+    it 'should contain a foo executable' do
+      should contain_file('/usr/local/bin/foo') \
+        .with_mode('0755')
+    end
+
+    it 'should contain a cron to run foo' do
+      should contain_file('/etc/cron.daily/run_foo') \
+        .with_mode('0600')
+    end
+  end
 end
