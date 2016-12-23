@@ -498,4 +498,24 @@ describe 'resource_tree', :type => :class do
         .with_mode('0600')
     end
   end
+
+  context 'with variable collision' do
+    let(:params) {
+      {
+        :collections => {
+          "variable_collider" => {
+            "file" => %({"foo" => "bar", "hello" => "world"}.inject({}) {|r,(k,v)| r.merge({k => {"content" => v.to_s}}) })
+          }
+        },
+        :apply => ["variable_collider"]
+      }
+    }
+
+    it 'should contain a directory and script' do
+      should contain_file('foo') \
+        .with_content("bar")
+      should contain_file('hello') \
+        .with_content("world")
+    end
+  end
 end

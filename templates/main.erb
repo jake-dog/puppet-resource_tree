@@ -1,3 +1,13 @@
+<%# We need to create a clean scope to evaluate any strings -%>
+<%
+  class CleanScope
+    def scope_eval(scope, code)
+      eval(code)
+    end
+  end
+  clean = CleanScope.new
+-%>
+
 <%# Reject collections that are not in resource_tree::apply -%>
 <%
   apply_collections = @allcollections.reject {|k,v|
@@ -9,7 +19,7 @@
 <%# returning only the resulting collections. -%>
 <%
   parsed_collections = apply_collections.map{|k,v|
-    ((v.to_s == v) && eval(v)) || v
+    ((v.to_s == v) && clean.scope_eval(scope, v)) || v
   }
 -%>
 
@@ -18,7 +28,7 @@
 <%
   resources = parsed_collections.inject({}) {|a,b|
     a.merge(Hash[(a.keys & b.keys).map {|k| 
-      [k,(((a[k].to_s == a[k]) && eval(a[k])) || a[k]).merge(((b[k].to_s == b[k]) && eval(b[k])) || b[k])] 
+      [k,(((a[k].to_s == a[k]) && clean.scope_eval(scope, a[k])) || a[k]).merge(((b[k].to_s == b[k]) && clean.scope_eval(scope, b[k])) || b[k])] 
     }]).merge(b.reject {|k,v| 
       (a.keys & b.keys).include? k 
     })
@@ -29,8 +39,8 @@
 <%# while reformatting each in resource_tree::resource syntax -%>
 <%
   resources_by_type = resources.map {|k,v|
-    Hash[(((v.to_s == v) && eval(v)) || v).map {|a,b| 
-      [a, (((b.to_s == b) && eval(b)) || b)] 
+    Hash[(((v.to_s == v) && clean.scope_eval(scope, v)) || v).map {|a,b| 
+      [a, (((b.to_s == b) && clean.scope_eval(scope, b)) || b)] 
     }.map {|a,b| 
       [ k+"-"+a,
         {
