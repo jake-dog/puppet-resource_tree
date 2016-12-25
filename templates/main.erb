@@ -1,4 +1,5 @@
-<%# We need to create a clean scope to evaluate any strings -%>
+<%# We need to create a clean scope to evaluate any strings. -%>
+<%# Variable collisions only seem to effect jruby. -%>
 <%
   class CleanScope
     def scope_eval(scope, code)

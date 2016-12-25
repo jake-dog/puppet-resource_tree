@@ -511,7 +511,7 @@ describe 'resource_tree', :type => :class do
       }
     }
 
-    it 'should contain a directory and script' do
+    it 'should contain two files' do
       should contain_file('foo') \
         .with_content("bar")
       should contain_file('hello') \
