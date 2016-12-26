@@ -518,4 +518,30 @@ describe 'resource_tree', :type => :class do
         .with_content("world")
     end
   end
+
+  context 'with aliased scope functions but preserving scope var' do
+    let(:params) {
+      {
+        :collections => {
+          "scoped_functions" => {
+            "file" => %({"foo" => hiera('foo'), "hello" => scope.function_hiera(["hello"])}.inject({}) {|r,(k,v)| r.merge({k => {"content" => v.to_s}}) })
+          }
+        },
+        :apply => ["scoped_functions"]
+      }
+    }
+
+    it 'should contain two files' do
+      Puppet::Parser::Scope.any_instance.expects(:function_hiera)
+        .with(["foo"])
+        .returns("bar")
+      Puppet::Parser::Scope.any_instance.expects(:function_hiera)
+        .with(["hello"])
+        .returns("world")
+      should contain_file('foo') \
+        .with_content("bar")
+      should contain_file('hello') \
+        .with_content("world")
+    end
+  end
 end
