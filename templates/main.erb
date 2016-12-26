@@ -8,6 +8,14 @@
 <%# over from scope, much like Puppet::Parser::TemplateWrapper. -%>
 <%
   class CleanScope
+    def scope_call(*params)
+      @scope.method(:"function_#{__callee__}").call(params)
+    end
+
+    define_method "hiera", instance_method(:scope_call)
+    define_method "hiera_hash", instance_method(:scope_call)
+    define_method "hiera_array", instance_method(:scope_call)
+
     def scope_eval(code)
       if !@clientcert
         scope.to_hash.each do |name, value|
