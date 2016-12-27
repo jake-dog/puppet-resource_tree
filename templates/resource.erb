@@ -50,7 +50,7 @@
         {
           "type" => k, 
           "rt_notify" => b.fetch("rt_notify",nil), 
-          "rt_requires" => (b.fetch("rt_requires",[]) + ["#{@type}-#{@name}"]).uniq, 
+          "rt_requires" => (b.fetch("rt_requires",[]) + [@name]).uniq,
           "rt_resources" => b.fetch("rt_resources",nil),
           "params" => {
             a => scope.lookupvar("resource_tree::defaults").fetch(k,{}).merge(b.reject {|x,y|
