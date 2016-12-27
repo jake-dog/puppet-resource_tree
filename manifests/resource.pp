@@ -9,15 +9,7 @@ define resource_tree::resource (
   
   if $rt_resources {
       $uniq_resources = parseyaml(template('resource_tree/resource.erb'))
-      create_resources('resource_tree::resource', $uniq_resources, { 'require' => Resource_tree::Placeholder[$name] })
-  }
-
-  # Ignore "before" requirement when "type" is exported
-  if $type =~ /^[@][@]/ {
-    $before = []
-  } else {
-    resource_tree::placeholder{ $name: }
-    $before = [Resource_tree::Placeholder[$name]]
+      create_resources('resource_tree::resource', $uniq_resources)
   }
   
   # Allow arbitrary commands and nested yaml
@@ -45,15 +37,15 @@ define resource_tree::resource (
     $all_notify = concat(concat($exec_notify,$mount_notify),$service_notify)
     
     if $rt_requires {
-      create_resources($type, $parsed_params, { 'before' => $before, 'require' => Resource_tree::Placeholder[$rt_requires], 'notify' => $all_notify })
+      rt_resources($type, $parsed_params, { 'rt_require' => $rt_requires, 'notify' => $all_notify })
     } else {
-      create_resources($type, $parsed_params, { 'before' => $before, 'notify' => $all_notify })
+      rt_resources($type, $parsed_params, { 'notify' => $all_notify })
     }
   } else {
     if $rt_requires {
-      create_resources($type, $parsed_params, { 'before' => $before, 'require' => Resource_tree::Placeholder[$rt_requires] })
+      rt_resources($type, $parsed_params, { 'rt_require' => $rt_requires })
     } else {
-      create_resources($type, $parsed_params, { 'before' => $before })
+      rt_resources($type, $parsed_params, {})
     }
   }
 }
