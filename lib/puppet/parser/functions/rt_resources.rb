@@ -20,29 +20,19 @@ ENDOFDOC
 
   type, instances, defaults = args
   defaults ||= {}
-  defaults["require"] = [defaults.fetch("rt_require",[])].flatten.map {|requires|
-    function_notice([requires])
-    rtype = requires.split("-")[0]
-    rtitle = requires.split("-")[1..-1].join("-")
-    function_notice([rtype])
-    function_notice([rtitle])
-    #Puppet::Parser::Resource::Reference.new(
-    Puppet::Resource.new(
+  metaparams = ['require', 'subscribe']
+  metaparams.each {|m|
+    defaults[m] = [defaults.fetch("rt_#{m}",[])].flatten.map {|rt_resref|
+      rtype = rt_resref.split("-")[0]
+      rtitle = rt_resref.split("-")[1..-1].join("-")
+      Puppet::Resource.new(
         rtype.capitalize, rtitle,
-    )
+      )
+    }
   }
-  defaults["subscribe"] = [defaults.fetch("rt_subscribe",[])].flatten.map {|subscribes|
-    stype = subscribes.split("-")[0]
-    stitle = subscribes.split("-")[1..-1].join("-") 
-    #Puppet::Parser::Resource::Reference.new(
-    Puppet::Resource.new(
-        stype.capitalize, stitle,
-    )
-  }
-  function_notice([defaults.to_yaml])
-  function_notice([instances.to_yaml])
   Puppet::Parser::Functions.function(:create_resources)
-  function_create_resources(
-    [type, instances, defaults.delete_if {|k,v| ["rt_require","rt_subscribe"].include? k }]
-  )
+  function_create_resources([
+    type, instances,
+    defaults.delete_if {|k,v| metaparams.map{|m| "rt_#{m}"}.include? k }
+  ])
 end
