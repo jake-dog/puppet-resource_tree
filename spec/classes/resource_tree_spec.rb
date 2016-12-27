@@ -273,7 +273,7 @@ describe 'resource_tree', :type => :class do
           "static_content" => {
             "file" => {
               "/tmp/date_test" => {
-              "content" => "rt_eval::scope.function_notice([scope.lookupvar('all_notify')]);Time.now.day",
+              "content" => Time.now.day,
                 "rt_notify" => {
                   "service" => "httpd"
                 }
@@ -291,8 +291,6 @@ describe 'resource_tree', :type => :class do
   }
 
     it 'should have a file' do
-      Puppet::Util::Log.level = :debug
-      Puppet::Util::Log.newdestination(:console)
       should contain_file('/tmp/date_test') \
         .with_content(Time.now.day)
     end
@@ -389,8 +387,6 @@ describe 'resource_tree', :type => :class do
     }
 
     it 'should contain a script' do
-      Puppet::Util::Log.level = :debug
-      Puppet::Util::Log.newdestination(:console)
       should contain_file('/tmp/check_date.sh') \
         .with_content("date -u | logger")
     end
