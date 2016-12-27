@@ -1,0 +1,42 @@
+# Test whether a given class or definition is defined
+require 'puppet/parser/functions'
+
+Puppet::Parser::Functions.newfunction(:rt_resources,
+                                      :type => :statement,
+                                      :doc => <<-'ENDOFDOC'
+This is a thing wrapper on top of the default 'create_resources' function
+which accepts Resource Tree parameters 'rt_requires' and 'rt_subscribes'
+and converts them into appropriate Puppet Resource references.
+
+For any concerns about the behavior of this function, read up the
+'create_resources' documentation, and Resource Tree documentation.
+ENDOFDOC
+) do |vals|
+  type, title, params = vals
+  raise(ArgumentError, 'Must specify a type') unless type
+  raise(ArgumentError, 'Must specify a title') unless title
+  params ||= {}
+  items = [title].flatten
+  items.each do |item|
+		Puppet::Parser::Functions.function(:create_resources)
+		params["require"] = params.fetch("rt_require",[]).map {|requires|
+			type = requires.split("-")[0]
+			title = requires.split("-")[1..-1].join("-")
+			Puppet::Parser::Resource::Reference.new(
+					:type => type, :title => title,
+					:scope => self
+			)
+		}
+		params["subscribe"] = params.fetch("rt_subscribe",[]).map {|requires|
+		  type = requires.split("-")[0]
+			title = requires.split("-")[1..-1].join("-") 
+			Puppet::Parser::Resource::Reference.new(
+					:type => type, :title => title,
+					:scope => self
+			)
+		}
+		function_create_resources(
+			[type.capitalize, { item => params.delete_if {|k,v| ["rt_require","rt_subscribe"].include? k } }]
+		)
+  end
+end
