@@ -143,13 +143,12 @@ describe 'resource_tree', :type => :class do
       }
     }
 
-    it 'should contain 5 files dependent on 1 file' do
-      should contain_file('/tmp/test').that_comes_before('Resource_tree::Placeholder[file-/tmp/test]')
-      should contain_resource_tree__resource('file-/tmp/test/test-file-1').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
-      should contain_resource_tree__resource('file-/tmp/test/test-file-2').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
-      should contain_resource_tree__resource('file-/tmp/test/test-file-3').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
-      should contain_resource_tree__resource('file-/tmp/test/test-file-4').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
-      should contain_resource_tree__resource('file-/tmp/test/test-file-5').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
+    it 'should contain 5 files dependent on 1 folder' do
+      should contain_file('/tmp/test/test-file-1').that_requires('File[/tmp/test]')
+      should contain_file('/tmp/test/test-file-2').that_requires('File[/tmp/test]')
+      should contain_file('/tmp/test/test-file-3').that_requires('File[/tmp/test]')
+      should contain_file('/tmp/test/test-file-4').that_requires('File[/tmp/test]')
+      should contain_file('/tmp/test/test-file-5').that_requires('File[/tmp/test]')
     end
   end
   
@@ -274,7 +273,7 @@ describe 'resource_tree', :type => :class do
           "static_content" => {
             "file" => {
               "/tmp/date_test" => {
-                "content" => Time.now.day,
+              "content" => "rt_eval::scope.function_notice([scope.lookupvar('all_notify')]);Time.now.day",
                 "rt_notify" => {
                   "service" => "httpd"
                 }
@@ -289,9 +288,11 @@ describe 'resource_tree', :type => :class do
         },
         :apply => ["static_content"]
       }
-    }
+  }
 
     it 'should have a file' do
+      Puppet::Util::Log.level = :debug
+      Puppet::Util::Log.newdestination(:console)
       should contain_file('/tmp/date_test') \
         .with_content(Time.now.day)
     end
@@ -388,12 +389,14 @@ describe 'resource_tree', :type => :class do
     }
 
     it 'should contain a script' do
+      Puppet::Util::Log.level = :debug
+      Puppet::Util::Log.newdestination(:console)
       should contain_file('/tmp/check_date.sh') \
         .with_content("date -u | logger")
     end
     
     it 'should have a cron requiring a script' do
-      should contain_cron('run_date_check').that_requires('Resource_tree::Placeholder[file-/tmp/check_date.sh]')
+      should contain_cron('run_date_check').that_requires('File[/tmp/check_date.sh]')
     end
   end
   
@@ -431,8 +434,8 @@ describe 'resource_tree', :type => :class do
     end
     
     it 'should have a cron requiring a script' do
-      should contain_cron('run_date_check').that_requires('Resource_tree::Placeholder[file-/tmp/check_date.sh]')
-      should contain_cron('run_date_check').that_requires('Resource_tree::Placeholder[file-/tmp/test]')
+      should contain_cron('run_date_check').that_requires('File[/tmp/check_date.sh]')
+      should contain_cron('run_date_check').that_requires('File[/tmp/test]')
     end
   end
 
