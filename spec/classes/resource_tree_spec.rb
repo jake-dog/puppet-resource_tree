@@ -543,4 +543,26 @@ describe 'resource_tree', :type => :class do
         .with_content("world")
     end
   end
+
+  context 'with instance vars' do
+    let(:params) {
+      {
+        :collections => {
+          "instance_vars" => {
+            "file" => {
+              "/tmp/instance_vars" => {
+                "content" => "rt_eval::@environment"
+              }
+            }
+          }
+        },
+        :apply => ["instance_vars"]
+      }
+    }
+
+    it 'should contain a file with an instance var' do
+      should contain_file('/tmp/instance_vars') \
+        .with_content("rp_env")  # should be default environment
+    end
+  end
 end
