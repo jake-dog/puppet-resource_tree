@@ -22,7 +22,7 @@ ENDOFDOC
   defaults ||= {}
   metaparams = ['require', 'subscribe']
   metaparams.each {|m|
-    defaults[m] = [defaults.fetch("rt_#{m}",[])].flatten.map {|rt_resref|
+    defaults[m] = [defaults.reject{|k,v| v.nil? }.fetch("rt_#{m}",[])].flatten.map {|rt_resref|
       rtype = rt_resref.split("-")[0]
       rtitle = rt_resref.split("-")[1..-1].join("-")
       Puppet::Resource.new(
