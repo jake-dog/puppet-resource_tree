@@ -1,6 +1,6 @@
 {
   "name": "jake-resource_tree",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "jake",
   "license": "Apache-2.0",
   "summary": "Create Puppet resources dynamically in Hiera",
