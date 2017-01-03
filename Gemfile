@@ -17,6 +17,7 @@ group :development, :unit_tests do
   gem 'puppet_facts',            :require => false
   gem 'json',                    :require => false
   gem 'nokogiri', '1.6.8',       :require => false
+  gem 'rake', '11.2.2',          :require => false
 end
 
 group :system_tests do
