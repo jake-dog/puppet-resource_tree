@@ -9,7 +9,7 @@
 <%
   class CleanScope
     def scope_call(*params)
-      @scope.method(:"function_#{__callee__}").call(params)
+      @__scope__.method(:"function_#{__callee__}").call(params)
     end
 
     define_method "hiera", instance_method(:scope_call)
