@@ -566,4 +566,37 @@ describe 'resource_tree', :type => :class do
         .with_content("world")
     end
   end
+
+  context 'with inline ruby scope functions and legacy scope evaluation' do
+    let(:params) {
+      {
+        :collections => {
+          "rt_eval_scoping" => {
+            "file" => {
+              "/tmp/foo" => {
+                "content" => "rt_eval::scope.function_hiera(['foo'])"
+              },
+              "/tmp/hello" => {
+                "content" => "rt_eval::hiera('hello')"
+              }
+            }
+          }
+        },
+        :apply => ["rt_eval_scoping"]
+      }
+    }
+
+    it 'should contain two files' do
+      Puppet::Parser::Scope.any_instance.expects(:function_hiera)
+        .with(["foo"])
+        .returns("bar")
+      Puppet::Parser::Scope.any_instance.expects(:function_hiera)
+        .with(["hello"])
+        .returns("world")
+      should contain_file('/tmp/foo') \
+        .with_content("bar")
+      should contain_file('/tmp/hello') \
+        .with_content("world")
+    end
+  end
 end
