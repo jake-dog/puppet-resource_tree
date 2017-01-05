@@ -21,7 +21,7 @@ define resource_tree::resource (
   }
   
   # Allow arbitrary commands and nested yaml
-  $parsed_params = parseyaml(inline_template('<%= Hash[@params.keys[0], Hash[@params.values[0].map {|k,v| ((k.start_with? "rt_parse::") && [k[10..-1], YAML.load((((v.respond_to? :start_with?) && (v.start_with? "rt_eval::")) && eval(v[9..-1])) || v)]) || [k,(((v.respond_to? :start_with?) && (v.start_with? "rt_eval::")) && eval(v[9..-1])) || v] }]].to_yaml %>'))
+  $parsed_params = parseyaml(template('resource_tree/param_parse.erb'))
 
   if $rt_notify {
     if has_key($rt_notify, 'exec') {
