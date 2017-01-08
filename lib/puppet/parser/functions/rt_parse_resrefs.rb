@@ -1,7 +1,7 @@
 require 'puppet/parser/functions'
 
 Puppet::Parser::Functions.newfunction(:rt_parse_resrefs,
-                                      :type => :statement,
+                                      :type => :rvalue,
                                       :doc => <<-'ENDOFDOC'
 Convert a list of Resource Tree style resource references of the format
 "<type>-<name>" into Puppet resource references using the string2resource
@@ -16,5 +16,5 @@ ENDOFDOC
   
   # Convert resource strings into resource objects
   Puppet::Parser::Functions.function(:string2resource)
-  function_string2resource(resrefs)
+  function_string2resource([resrefs])
 end

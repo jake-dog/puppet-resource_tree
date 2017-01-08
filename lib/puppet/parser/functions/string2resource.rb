@@ -1,7 +1,7 @@
 require 'puppet/parser/functions'
 
 Puppet::Parser::Functions.newfunction(:string2resource,
-                                      :type => :statement,
+                                      :type => :rvalue,
                                       :doc => <<-'ENDOFDOC'
 Convert a resource string (eg. "File[foo]"), a type and name (eg. ["file", "foo"]),
 or a list of resource strings into Puppet resources.
