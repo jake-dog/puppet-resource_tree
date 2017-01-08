@@ -15,37 +15,41 @@ define resource_tree::resource (
   # Allow arbitrary commands and nested yaml
   $parsed_params = parseyaml(template('resource_tree/param_parse.erb'))
 
-  if $rt_notify {
-    if has_key($rt_notify, 'exec') {
-      $exec_notify = [Exec[$rt_notify['exec']]]
-    } else {
-      $exec_notify = []
-    }
-    
-    if has_key($rt_notify, 'mount') {
-      $mount_notify = [Mount[$rt_notify['mount']]]
-    } else {
-      $mount_notify = []
-    }
-    
-    if has_key($rt_notify, 'service') {
-      $service_notify = [Service[$rt_notify['service']]]
-    } else {
-      $service_notify = []
-    }
-    
-    $all_notify = concat(concat($exec_notify,$mount_notify),$service_notify)
-    
-    if $rt_requires {
-      create_resources($type, $parsed_params, { 'require' => rt_parse_resrefs($rt_requires), 'notify' => $all_notify })
-    } else {
-      create_resources($type, $parsed_params, { 'notify' => $all_notify })
-    }
+  # Parse require/before/subscribe/notify in resource_tree >=1.0.0 style
+  if has_key($params, 'before') {
+    $before = string2resource($parsed_params['before'])
   } else {
-    if $rt_requires {
-      create_resources($type, $parsed_params, { 'require' => rt_parse_resrefs($rt_requires) })
-    } else {
-      create_resources($type, $parsed_params, {})
-    }
+    $before = []
   }
+  if has_key($params, 'require') {
+    $require = string2resource($parsed_params['require'])
+  } else {
+    $require = []
+  }
+  if has_key($params, 'notify') {
+    $notify = string2resource($parsed_params['notify'])
+  } else {
+    $notify = []
+  }
+  if has_key($params, 'subscribe') {
+    $subscribe = string2resource($parsed_params['subscribe'])
+  } else {
+    $subscribe = []
+  }
+
+  # Pre-1.0 support
+  if $rt_notify {
+    $all_notify = concat(rt_parse_resrefs(join_keys_to_values($rt_notify, "-")), $notify)
+  } else {
+    $all_notify = $notify
+  }
+  if $rt_requires {
+    $all_require = concat(rt_parse_resrefs($rt_requires), $require)
+  } else {
+    $all_require = $require
+  }
+
+  create_resources($type, delete($parsed_params, ['require', 'subscribe', 'notify', 'before']),
+                   { 'require' => $all_require, 'notify' => $all_notify,
+                     'subscribe' => $subscribe, 'before' => $before })
 }
