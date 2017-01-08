@@ -37,15 +37,15 @@ define resource_tree::resource (
     $all_notify = concat(concat($exec_notify,$mount_notify),$service_notify)
     
     if $rt_requires {
-      rt_resources($type, $parsed_params, { 'rt_require' => $rt_requires, 'notify' => $all_notify })
+      create_resources($type, $parsed_params, { 'rt_require' => rt_parse_resrefs($rt_requires), 'notify' => $all_notify })
     } else {
-      rt_resources($type, $parsed_params, { 'notify' => $all_notify })
+      create_resources($type, $parsed_params, { 'notify' => $all_notify })
     }
   } else {
     if $rt_requires {
-      rt_resources($type, $parsed_params, { 'rt_require' => $rt_requires })
+      create_resources($type, $parsed_params, { 'rt_require' => rt_parse_resrefs($rt_requires) })
     } else {
-      rt_resources($type, $parsed_params, {})
+      create_resources($type, $parsed_params, {})
     }
   }
 }
