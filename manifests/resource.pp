@@ -39,7 +39,7 @@ define resource_tree::resource (
 
   # Pre-1.0 support
   if $rt_notify {
-    $all_notify = concat(rt_parse_resrefs(join_keys_to_values($rt_notify, "-")), $notify)
+    $all_notify = concat(rt_parse_resrefs($rt_notify), $notify)
   } else {
     $all_notify = $notify
   }
