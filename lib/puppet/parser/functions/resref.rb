@@ -46,7 +46,9 @@ ENDOFDOC
     else
       # Convert whatever remains into an array
       (res.is_a?(Array)? res : [res]).map{|e|
-        if e =~ /^(\w|[:_])+-/
+        # regex is straight from puppetlabs, but with a dash at the end
+        # https://docs.puppet.com/puppet/latest/lang_reserved.html#classes-and-defined-resource-types
+        if e =~ /\A([a-z][a-z0-9_]*)?(::[a-z][a-z0-9_]*)*-/
           RefString.new(e.to_s.split("-")[0].capitalize, e.to_s.split("-")[1..-1].join("-"))
         elsif e.is_a?(Array)
           RefString.new(e[0].to_s.capitalize, e[1].to_s)

@@ -23,12 +23,12 @@ describe 'resref' do
     filebar = Puppet::Resource.new(:file, "bar")
     packagebiz = Puppet::Resource.new(:package, "biz")
 
-    it { is_expected.to run.with_params([ 'File-foo', 'File-bar' ]).and_return([filefoo, filebar]) }
-    it { is_expected.to run.with_params([ 'File-foo']).and_return([filefoo]) }
+    it { is_expected.to run.with_params([ 'file-foo', 'file-bar' ]).and_return([filefoo, filebar]) }
+    it { is_expected.to run.with_params([ 'file-foo']).and_return([filefoo]) }
     it { is_expected.to run.with_params([ 'file-foo', 'file-bar', 'package-biz' ]).and_return([filefoo, filebar, packagebiz]) }
     it { is_expected.to run.with_params([ 'file-foo', 'file-bar'], [ 'package-biz' ]).and_return([filefoo, filebar, packagebiz]) }
-    it { is_expected.to run.with_params([ 'file-foo' ], [ 'Package-biz' ]).and_return([filefoo, packagebiz]) }
-    it { is_expected.to run.with_params([ 'File-foo' ], [ 'Package-biz' ]).and_return([filefoo, packagebiz]) }
+    it { is_expected.to run.with_params([ 'file-foo' ], [ 'package-biz' ]).and_return([filefoo, packagebiz]) }
+    it { is_expected.to run.with_params([ 'file-foo' ], [ 'package-biz' ]).and_return([filefoo, packagebiz]) }
     it { is_expected.to run.with_params('file-foo', 'package-biz').and_return([filefoo, packagebiz]) }
     it { is_expected.to run.with_params('package-biz').and_return([packagebiz]) }
     it { is_expected.to run.with_params('file-foo', 'file-bar', [ 'package-biz' ]).and_return([filefoo, filebar, packagebiz]) }
@@ -71,4 +71,6 @@ describe 'resref' do
     it { is_expected.to run.with_params({ 'file' => ['foo'] }, [ 'file-bar' ], [ 'package[biz]' ]).and_return([filefoo, filebar, packagebiz]) }
     it { is_expected.to run.with_params({ 'file' => 'foo' }, [ 'file-bar', 'package[biz]' ]).and_return([filefoo, filebar, packagebiz]) }
   end
+
+  ## Need to add tests for when the resource is already in the catalog
 end
