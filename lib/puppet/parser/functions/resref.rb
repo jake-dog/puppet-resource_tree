@@ -23,7 +23,7 @@ https://docs.puppet.com/puppet/latest/lang_data_resource_type.html#examples-1
 ENDOFDOC
 ) do |args|
   # our basic string resource reference structure
-  RefString = Struct.new(:type, :title)
+  RefString ||= Struct.new(:type, :title)
 
   # This will return a resource either by RefString struct, or string
   str2res = lambda {|rs|
@@ -47,9 +47,9 @@ ENDOFDOC
       # Convert whatever remains into an array
       (res.is_a?(Array)? res : [res]).map{|e|
         if e =~ /^(\w|[:_])+-/
-          ResString.new(e.to_s.split("-")[0].capitalize, e.to_s.split("-")[1..-1].join("-"))
+          RefString.new(e.to_s.split("-")[0].capitalize, e.to_s.split("-")[1..-1].join("-"))
         elsif e.is_a?(Array)
-          ResString.new(e[0].to_s.capitalize, e[1].to_s)
+          RefString.new(e[0].to_s.capitalize, e[1].to_s)
         else
           e
         end
