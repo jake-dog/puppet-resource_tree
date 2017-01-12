@@ -17,34 +17,34 @@ define resource_tree::resource (
 
   # Parse require/before/subscribe/notify in resource_tree >=1.0.0 style
   if has_key($params, 'before') {
-    $before = string2resource($parsed_params['before'])
+    $before = resref($parsed_params['before'])
   } else {
     $before = []
   }
   if has_key($params, 'require') {
-    $require = string2resource($parsed_params['require'])
+    $require = resref($parsed_params['require'])
   } else {
     $require = []
   }
   if has_key($params, 'notify') {
-    $notify = string2resource($parsed_params['notify'])
+    $notify = resref($parsed_params['notify'])
   } else {
     $notify = []
   }
   if has_key($params, 'subscribe') {
-    $subscribe = string2resource($parsed_params['subscribe'])
+    $subscribe = resref($parsed_params['subscribe'])
   } else {
     $subscribe = []
   }
 
   # Pre-1.0 support
   if $rt_notify {
-    $all_notify = concat(rt_parse_resrefs($rt_notify), $notify)
+    $all_notify = concat(resref($rt_notify), $notify)
   } else {
     $all_notify = $notify
   }
   if $rt_requires {
-    $all_require = concat(rt_parse_resrefs($rt_requires), $require)
+    $all_require = concat(resref($rt_requires), $require)
   } else {
     $all_require = $require
   }
