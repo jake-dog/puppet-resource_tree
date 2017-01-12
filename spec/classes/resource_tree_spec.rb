@@ -266,7 +266,7 @@ describe 'resource_tree', :type => :class do
     end
   end
   
-  context 'file with notify' do
+  context 'file with pre-1.0 notify' do
     let(:params) {
       {
         :collections => {
@@ -305,7 +305,7 @@ describe 'resource_tree', :type => :class do
     end
   end
   
-  context 'file with multiple notifies' do
+  context 'file with multiple pre-1.0 notifies' do
     let(:params) {
       {
         :collections => {
@@ -362,7 +362,7 @@ describe 'resource_tree', :type => :class do
     end
   end
   
-  context 'with requires' do
+  context 'with pre-1.0 requires' do
     let(:params) {
       {
         :collections => {
@@ -396,7 +396,7 @@ describe 'resource_tree', :type => :class do
     end
   end
   
-  context 'with multiple requires' do
+  context 'with multiple pre-1.0 requires' do
     let(:params) {
       {
         :collections => {
@@ -596,6 +596,176 @@ describe 'resource_tree', :type => :class do
         .with_content("bar")
       should contain_file('/tmp/hello') \
         .with_content("world")
+    end
+  end
+
+  #v1.0 tests########################
+  context 'file with notify' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/date_test" => {
+              "content" => Time.now.day,
+                "notify" => {
+                  "service" => "httpd"
+                }
+              }
+            },
+            "service" => {
+              "httpd" => {
+                "ensure" => "running"
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+  }
+
+    it 'should have a file' do
+      should contain_file('/tmp/date_test') \
+        .with_content(Time.now.day)
+    end
+    
+    it 'should have a service' do
+      should contain_service('httpd')
+    end
+    
+    it 'should have a file notifying a service' do
+      should contain_file('/tmp/date_test') \
+        .that_notifies('Service[httpd]')
+    end
+  end
+  
+  context 'file with multiple notifies' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/date_test" => {
+                "content" => Time.now.day,
+                "notify" => {
+                  "service" => [ "httpd", "rsyslog" ],
+                  "exec"    => "create_test"
+                }
+              }
+            },
+            "service" => {
+              "httpd" => {
+                "ensure" => "running"
+              },
+              "rsyslog" => {
+                "ensure" => "running"
+              }
+            },
+            "exec" => {
+              "create_test" => {
+                "command" => "/bin/mkdir /tmp/test"
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should have a file' do
+      should contain_file('/tmp/date_test') \
+        .with_content(Time.now.day)
+    end
+    
+    it 'should have services' do
+      should contain_service('httpd')
+      should contain_service('rsyslog')
+    end
+    
+    it 'should have a exec' do
+      should contain_exec('create_test')
+    end
+    
+    it 'should have a file notifying services and exec' do
+      should contain_file('/tmp/date_test') \
+        .that_notifies('Service[httpd]')
+      should contain_file('/tmp/date_test') \
+        .that_notifies('Service[rsyslog]')
+      should contain_file('/tmp/date_test') \
+        .that_notifies('Exec[create_test]')
+    end
+  end
+  
+  context 'with require' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/check_date.sh" => {
+                "content" => "date -u | logger",
+                "mode"    => "0755"
+              }
+            },
+            "cron" => {
+              "run_date_check" => {
+                "command"     => "/tmp/check_date.sh",
+                "hour"        => "*",
+                "require" => "file-/tmp/check_date.sh"
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should contain a script' do
+      should contain_file('/tmp/check_date.sh') \
+        .with_content("date -u | logger")
+    end
+    
+    it 'should have a cron requiring a script' do
+      should contain_cron('run_date_check').that_requires('File[/tmp/check_date.sh]')
+    end
+  end
+  
+  context 'with multiple require' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/check_date.sh" => {
+                "content" => "date -u > /tmp/test/date.log",
+                "mode"    => "0755"
+              },
+              "/tmp/test" => {
+                "ensure" => "directory",
+              }
+            },
+            "cron" => {
+              "run_date_check" => {
+                "command"     => "/tmp/check_date.sh",
+                "hour"        => "*",
+                "require" => { "file" => [ "/tmp/check_date.sh", "/tmp/test" ] }
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should contain a directory and script' do
+      should contain_file('/tmp/check_date.sh') \
+        .with_content("date -u > /tmp/test/date.log")
+      should contain_file('/tmp/test')
+    end
+    
+    it 'should have a cron requiring a script' do
+      should contain_cron('run_date_check').that_requires('File[/tmp/check_date.sh]')
+      should contain_cron('run_date_check').that_requires('File[/tmp/test]')
     end
   end
 end
