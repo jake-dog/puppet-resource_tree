@@ -106,7 +106,7 @@ resource_tree::collections:
 
 Relationship Metaparameters and Resource References
 ===================================================
-Resource Tree supports the four puppet metaparameters: [before, require, notify and subscribe](https://docs.puppet.com/puppet/latest/lang_relationships.html#syntax-relationship-metaparameters).  Since it would be difficult and overly verbose to write out serialized resource references in YAML, Resource Tree provides three styles in which resource references can be expressed as strings.
+Resource Tree supports the four puppet relationship metaparameters: [before, require, notify and subscribe](https://docs.puppet.com/puppet/latest/lang_relationships.html#syntax-relationship-metaparameters).  Since it would be difficult and overly verbose to write out serialized resource references in YAML, Resource Tree provides three styles in which resource references can be expressed as strings.
 
 ```yaml
 resource_tree::collections:
@@ -254,9 +254,9 @@ resource_tree::collections:
 
 Legacy (pre-1.0.0) Support
 ==========================
-Prior to version 1.0.0, Resource Tree created Placeholder resources which were related to other objects in the tree.  This strategy helped avoid the need to generate resource references from strings.  Unfortunately this had the caveat of preventing users from referencing resources outside the tree which didn't have Placeholder resources.
+Prior to version 1.0.0, Resource Tree created `Placeholder` resources which were related to other objects in the tree.  This strategy helped avoid the need to generate resource references from strings.  Unfortunately this had the caveat of preventing users from referencing resources outside the tree which didn't have Placeholder resources.
 
-Resource Tree now has elaborate capabilities to generate native puppet resource references.  During this transition, legacy relationship metaparameters `rt_requires` and `rt_notifies` were replaces with more conventional `require` and `notify`.
+Resource Tree now has elaborate capabilities to generate native puppet resource references.  During this transition, legacy relationship metaparameters `rt_requires` and `rt_notify` were replaces with more conventional `require` and `notify`.
 
 To ease migration from older versions of Resource Tree, the old relationship metaparameters are still supported, however NO Placeholders will be created.  Furthermore users may choose to use either the old or new relationship metaparameters, but not both.  In the event that both old and new relationship metaparameters are used, only the new ones will be honored.
 
@@ -266,7 +266,7 @@ To ease migration from older versions of Resource Tree, the old relationship met
 
 #### `resref`
 
-Converts all arguments to an array of puppet resource references.  Each argument can be a string/dict or array of string/dict. For example:
+Converts all arguments to an array of puppet resource references.  Each argument can be a string/dict or array of string/dict.
 
 *Examples:*
 ~~~
