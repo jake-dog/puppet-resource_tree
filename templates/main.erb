@@ -76,7 +76,7 @@
           "rt_before" => b.fetch("before",[]),
           "rt_subscribe" => b.fetch("subscribe",[]),
           "rt_notify" => b.fetch("notify", b.fetch("rt_notify",[])),
-          "rt_requires" => [b.fetch("require", b.fetch("rt_requires",[]))],
+          "rt_requires" => b.fetch("require", b.fetch("rt_requires",[])),
           "rt_resources" => b.fetch("rt_resources",nil),
           "params" => {
             a => @defaults.fetch(k,{}).merge(b.reject {|x,y|

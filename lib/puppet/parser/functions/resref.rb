@@ -44,7 +44,7 @@ ENDOFDOC
   # convert all args to list of RefString or resource string
   args.map{|res|
     # Convert each argument into an array
-    (res.is_a?(Array)? res : [res]).map{|e|
+    (res.is_a?(Array)? res : [res]).flatten.map{|e|
       # regex is straight from puppetlabs, but with a dash at the end
       # https://docs.puppet.com/puppet/latest/lang_reserved.html#classes-and-defined-resource-types
       if e =~ /\A([a-z][a-z0-9_]*)?(::[a-z][a-z0-9_]*)*-/
@@ -54,8 +54,6 @@ ENDOFDOC
         e.map{|k,v|
           v.is_a?(Array)? v.map{|o| RefString.new(k,o) } : RefString.new(k,v)
         }.flatten
-      elsif e.is_a?(Array)
-        RefString.new(e[0].to_s.capitalize, e[1].to_s)
       else
         e
       end

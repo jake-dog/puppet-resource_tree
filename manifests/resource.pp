@@ -33,18 +33,8 @@ define resource_tree::resource (
   } else {
     $notify = []
   }
-
-  # We gotta do something special with rt_requires due to implicit
-  # requirements in the resource tree in hiera.  In the event that the
-  # resource being created has an implicit parent, rt_requires will
-  # have 2 elements, where the second element is the parent resource
-  # specified in resource_tree reference style.
   if !empty($rt_requires) {
-    if size($rt_requires) > 1 {
-      $require = resref($rt_requires[0], $rt_requires[1])
-    } else {
-      $require = resref($rt_requires[0])
-    }
+    $require = resref($rt_requires)
   } else {
     $require = []
   }
