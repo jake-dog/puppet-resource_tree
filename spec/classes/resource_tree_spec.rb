@@ -494,7 +494,8 @@ describe 'resource_tree', :type => :class do
 
     it 'should contain a cron to run foo' do
       should contain_file('/etc/cron.daily/run_foo') \
-        .with_mode('0600')
+        .with_mode('0600') \
+        .that_requires('File[/usr/local/bin/foo]')
     end
   end
 
@@ -607,7 +608,7 @@ describe 'resource_tree', :type => :class do
           "static_content" => {
             "file" => {
               "/tmp/date_test" => {
-              "content" => Time.now.day,
+                "content" => Time.now.day,
                 "notify" => {
                   "service" => "httpd"
                 }
@@ -766,6 +767,144 @@ describe 'resource_tree', :type => :class do
     it 'should have a cron requiring a script' do
       should contain_cron('run_date_check').that_requires('File[/tmp/check_date.sh]')
       should contain_cron('run_date_check').that_requires('File[/tmp/test]')
+    end
+  end
+
+  context 'with before' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/check_date.sh" => {
+                "content" => "date -u | logger",
+                "mode"    => "0755",
+                "before"  => "Cron[run_date_check]"
+              }
+            },
+            "cron" => {
+              "run_date_check" => {
+                "command"     => "/tmp/check_date.sh",
+                "hour"        => "*",
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should contain a script' do
+      should contain_file('/tmp/check_date.sh') \
+        .with_content("date -u | logger")
+    end
+    
+    it 'should have a script before a cron' do
+      should contain_file('/tmp/check_date.sh') \
+        .that_comes_before('Cron[run_date_check]')
+    end
+  end
+
+  context 'service with subscribe' do
+    let(:params) {
+      {
+        :collections => {
+          "static_content" => {
+            "file" => {
+              "/tmp/date_test" => {
+                "content" => Time.now.day
+              }
+            },
+            "service" => {
+              "httpd" => {
+                "ensure" => "running",
+                "subscribe" => {
+                  "file" => "/tmp/date_test"
+                }
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+  }
+
+    it 'should have a file' do
+      should contain_file('/tmp/date_test') \
+        .with_content(Time.now.day)
+    end
+    
+    it 'should have a service that subscribes to a file' do
+      should contain_service('httpd')
+        .that_subscribes_to('File[/tmp/date_test]')
+    end
+  end
+
+  context 'combining implicit/explicit require, notify, subscribe and before' do
+    let(:params) {
+      {
+        :collections => {
+          "apache_server" => {
+            "package" => %q({
+              "httpd" => {
+                "ensure" => "installed",
+                "before" => {
+                  "service" => "httpd"
+                }
+              }
+            }),
+            "file" => {
+              "/etc/rsyslog.d/httpd" => {
+                "content" => "local3.info /var/log/httpd_custom.log",
+                "notify" => "Service[rsyslog]",
+                "require" => {
+                  "package" => "httpd"
+                }
+              }
+            },
+            "service" => {
+              "httpd" => {
+                "ensure" => "running",
+                "subscribe" => "file-/etc/httpd/conf.d/10-myserver.conf",
+                "rt_resources" => {
+                  "file" => {
+                    "/etc/httpd/conf.d/10-myserver.conf" => {
+                      "content" => "rt_eval::Time.now.day.to_s",
+                    }
+                  }
+                }
+              },
+              "rsyslog" => {
+                "ensure" => "running"
+              }
+            }
+          }
+        },
+        :apply => ["apache_server"]
+      }
+  }
+
+    it 'should have a package requiring a file' do
+      should contain_package('httpd') \
+        .that_comes_before('Service[httpd]')
+    end
+    
+    it 'should have a syslog file' do
+      should contain_file('/etc/rsyslog.d/httpd') \
+        .with_content("local3.info /var/log/httpd_custom.log") \
+        .that_notifies("Service[rsyslog]") \
+        .that_requires("Package[httpd]")
+    end
+    
+    it 'should have a config file' do
+      should contain_file('/etc/httpd/conf.d/10-myserver.conf') \
+        .with_content(Time.now.day) \
+        .that_requires('Service[httpd]')
+    end
+    
+    it 'should have a service that requires and subscribes to a file' do
+      should contain_service('httpd') \
+        .that_subscribes_to('File[/etc/httpd/conf.d/10-myserver.conf]')
     end
   end
 end
