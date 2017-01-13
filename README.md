@@ -82,7 +82,7 @@ resource_tree::collections:
                 service: 'httpd'
 ```
 
-Relationships between resources in the tree can also be explicitly stated using the `rt_requires` parameter, with the caveat that required resources must be declared in a Resource Tree collection.  For instance the previous example could be rewritten with explicit relationships:
+Relationships between resources in the tree can also be explicitly stated using the `require` parameter.  For instance the previous example could be rewritten with explicit relationships:
 
 ```yaml
 resource_tree::collections:
@@ -93,25 +93,41 @@ resource_tree::collections:
     service:
       'httpd:
         ensure: 'running'
-        rt_requires:
-          - 'package-httpd'
+        require: 'Package[httpd]'
     file:
       '/etc/httpd/conf.d/status.load':
         ensure: 'present'
         owner: 'apache'
         group: 'apache'
         content: 'LoadModule status_module "modules/mod_status.so"'
-        rt_requires:
-          - 'package-httpd'
-        rt_notify:
-          service: 'httpd'
+        require: 'Package[httpd]'
+        notify: 'Service[httpd]'
 ```
 
-Resource tree contains three special parameters for each resource:
-        
-+ `rt_resources` - declare additional resources which require the current resource
-+ `rt_requires` - explicitly require a resource_tree resource which is not parent to the current resource
-+ `rt_notify` - notify a service, mount or exec declared in the catalog when current resource changes
+Relationship Metaparameters and Resource References
+===================================================
+Resource Tree supports the four puppet metaparameters: [before, require, notify and subscribe](https://docs.puppet.com/puppet/latest/lang_relationships.html#syntax-relationship-metaparameters).  Since it would be difficult and overly verbose to write out serialized resource references in YAML, Resource Tree provides three styles in which resource references can be expressed as strings.
+
+```yaml
+resource_tree::collections:
+  'resource_ref_styles':
+    file:
+      '/tmp/example.txt':
+
+        # Puppet style resource ref string
+        require: 'Service[puppet]'
+
+        # Resource Tree style ref string
+        before: 'package-puppet'
+
+        # Hash of type:title
+        notify:
+          service: 'puppet'
+```
+
+In addition to individual strings, and hashes, users may provide arrays of references, even mixing different styles for each element of the array.  For more information, refer to the documentation for the `resref` function.
+
+Although users are free to implement all styles, it is strongly encouraged to adhere to a single style for any individual resource collection to enhance readability.
 
 Default Parameters
 ==================
@@ -171,7 +187,7 @@ resource_tree::collections:
       }]
 ```
 
-Additionally individual resource parameters can be evaluated by prefixing them with `rt_eval::`, and parsed as yaml by prefixing the paramater name with `rt_parse::`.
+Additionally individual resource parameters can be evaluated by prefixing them with `rt_eval::`.
 
 Crazy Advanced Usage
 ====================
@@ -235,3 +251,29 @@ resource_tree::collections:
         ]
       }]
 ```
+
+Legacy (pre-1.0.0) Support
+==========================
+Prior to version 1.0.0, Resource Tree created Placeholder resources which were related to other objects in the tree.  This strategy helped avoid the need to generate resource references from strings.  Unfortunately this had the caveat of preventing users from referencing resources outside the tree which didn't have Placeholder resources.
+
+Resource Tree now has elaborate capabilities to generate native puppet resource references.  During this transition, legacy relationship metaparameters `rt_requires` and `rt_notifies` were replaces with more conventional `require` and `notify`.
+
+To ease migration from older versions of Resource Tree, the old relationship metaparameters are still supported, however NO Placeholders will be created.  Furthermore users may choose to use either the old or new relationship metaparameters, but not both.  In the event that both old and new relationship metaparameters are used, only the new ones will be honored.
+
+## Reference
+
+### Functions
+
+#### `resref`
+
+Converts all arguments to an array of puppet resource references.  Each argument can be a string/dict or array of string/dict. For example:
+
+*Examples:*
+~~~
+resref('File[foo]')                                     => [File[foo]]
+resref(['File[foo]','File[bar]'], 'Package[biz]')       => [File[foo], File[bar], Package[biz]]
+resref({'file' => ["foo", "bar"]})                      => [File[foo], File[bar]]
+resref(['file-foo', {'file' => 'bar'}])                 => [File[foo], File[bar]]
+~~~
+
+*Type*: rvalue.
