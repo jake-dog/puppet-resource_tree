@@ -91,7 +91,7 @@ resource_tree::collections:
       'httpd':
         ensure: 'installed'
     service:
-      'httpd:
+      'httpd':
         ensure: 'running'
         require: 'Package[httpd]'
     file:
