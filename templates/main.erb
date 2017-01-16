@@ -15,6 +15,7 @@
     define_method "hiera", instance_method(:scope_call)
     define_method "hiera_hash", instance_method(:scope_call)
     define_method "hiera_array", instance_method(:scope_call)
+    define_method "inline_template", instance_method(:scope_call)
 
     def scope_eval(code)
       if !@clientcert

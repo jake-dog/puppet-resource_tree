@@ -1,17 +1,32 @@
-Resource Tree Puppet Module [![Build Status](https://travis-ci.org/jake-dog/puppet-resource_tree.svg?branch=master)](https://travis-ci.org/jake-dog/puppet-resource_tree)
-===========================
+# Resource Tree Puppet Module [![Build Status](https://travis-ci.org/jake-dog/puppet-resource_tree.svg?branch=master)](https://travis-ci.org/jake-dog/puppet-resource_tree)
+
+#### Table of Contents
+
+1. [Overview](#overview)
+2. [Motivation](#motivation)
+3. [Operating Principle and Examples](#operating-principle)
+4. [Relationship Metaparameters and Resource References](#relationship-metaparameters-and-resource-references)
+5. [Default Parameters](#default-parameters)
+6. [Function Aliases](#function-aliases)
+7. [Advanced Usage](#advanced-usage)
+8. [Crazy Advanced Usage](#crazy-advanced-usage)
+9. [Legacy (pre-1.0.0) Support](#legacy-suppory)
+10. [Reference](#reference)
+
+## Overview
+
 A puppet swiss army knife, bridging the gap between code and configuration, making ad hoc modifications a bit more elegant.
 
-Motivation
-==========
+## Motivation
+
 Most modern puppet deployments are composed of puppetlabs/r10k, puppetlabs/hiera and an external node classifier.  Although the design is powerful and versioned, it doesn't leave much room for the reality of ad hoc configurations.  Often times puppet users find themselves adding a module, or editing an existing module, just to create a file or add a single package, which leads to an r10k push to every relevant environment.  The addition of a single missing resource can result in several commits, new repositories and a bunch of individual changes to production environments.
 
 Resource Tree aims to drastically reduce the complexity of ad hoc configurations in puppet by providing a simple mechanism to define puppet resources, and relationships between those resources, entirely in hieradata.
 
 Of course Resource Tree's capabilities extend far beyond defining individual resources, enabling users to do terrible blasphemous things to puppet.  Therefore it is highly advisable to keep Resource Tree configurations short and sweet, and avoid writing collections which would be better suited to a module.
 
-Operating Principle
-===================
+## Operating Principle
+
 Resource Tree is ideal for building simple collections of puppet resources, both user defined and [built-ins](https://docs.puppetlabs.com/references/latest/type.html), which have logical relationships to each other.
 
 A trivial example of such a resource collection would be an `index.html` running on a standard apache server with a docroot of `/var/www/html`, requiring a total of three `file` resources, assuming that `/var` is a given.  Written briefly:
@@ -104,8 +119,8 @@ resource_tree::collections:
         notify: 'Service[httpd]'
 ```
 
-Relationship Metaparameters and Resource References
-===================================================
+## Relationship Metaparameters and Resource References
+
 Resource Tree supports the four puppet relationship metaparameters: [before, require, notify and subscribe](https://docs.puppet.com/puppet/latest/lang_relationships.html#syntax-relationship-metaparameters).  Since it would be difficult and overly verbose to write out serialized resource references in YAML, Resource Tree provides three styles in which resource references can be expressed as strings.
 
 ```yaml
@@ -129,8 +144,8 @@ In addition to individual strings, and hashes, users may provide arrays of refer
 
 Although users are free to implement all styles, it is strongly encouraged to adhere to a single style for any individual resource collection to enhance readability.
 
-Default Parameters
-==================
+## Default Parameters
+
 Users may provide default parameters for resources declared via Resource Tree.  This can greatly reduce repetition of parameters when declaring many resources of the same type.
 
 In puppet we would define default parameters for `Package` resources like so:
@@ -149,8 +164,16 @@ resource_tree::default_params:
     provider: 'yum'
 ```
 
-Advanced Usage
-==============
+*Note:* Unfortunately relationship metaparameters are not yet supported as default parameters.
+
+## Function Aliases
+
+Traditionally calling puppet functions from a template requires a [fairly ugly syntax](https://docs.puppet.com/puppet/latest/lang_template_erb.html#calling-puppet-functions-from-templates).  Resource Tree instead provides four common functions with their traditional puppet syntax: `hiera`, `hiera_array`, `hiera_hash` and `inline_template`.
+
+This capability may be extended to other functions in future releases.
+
+## Advanced Usage
+
 Resource Tree provides a number of advanced features so collections can be built dynamically.  Any individual resource definition, resource collection, or collection of child resources which is a string will be evaluated as ruby code, eg.
 
 ```yaml
@@ -189,8 +212,8 @@ resource_tree::collections:
 
 Additionally individual resource parameters can be evaluated by prefixing them with `rt_eval::`.
 
-Crazy Advanced Usage
-====================
+## Crazy Advanced Usage
+
 A few intrepid users have discovered interesting ways to combine Resource Tree and ruby to dynamically create resources, including querying puppetdb to find members for proxies/load-balancers.  Here are a few tricks that tip the scales for what Resource Tree can do.
 
 #### Emulating `hiera_include('classes')`
@@ -199,7 +222,7 @@ A few intrepid users have discovered interesting ways to combine Resource Tree a
 resource_tree::collections:
   hiera_include:
     class: |
-      Hash[(scope.function_hiera_array(['classes']) - ['resource_tree']).map {|c| [c, {}] }]
+      Hash[(hiera_array('classes') - ['resource_tree']).map {|c| [c, {}] }]
 ```
 
 #### Using PuppetDB to discover puppetlabs/puppetlabs-haproxy balancer members
@@ -239,26 +262,26 @@ configs:
 resource_tree::collections:
   apply_configs:
     file: |
-      Hash[scope.function_hiera(['configs']).map {|k,v|
+      Hash[hiera('configs').map {|k,v|
         [
           "#{k}",
           {
             'ensure'  => 'present',
             'owner'   => 'root',
             'group'   => 'root',
-            'content' => 'rt_eval::scope.function_inline_template([scope.function_hiera(["config_file_template"])])'
+            'content' => 'rt_eval::inline_template(hiera("config_file_template"))'
           }
         ]
       }]
 ```
 
-Legacy (pre-1.0.0) Support
-==========================
+## Legacy Support
+
 Prior to version 1.0.0, Resource Tree created `Placeholder` resources which were related to other objects in the tree.  This strategy helped avoid the need to generate resource references from strings.  Unfortunately this had the caveat of preventing users from referencing resources outside the tree which didn't have Placeholder resources.
 
-Resource Tree now has elaborate capabilities to generate native puppet resource references.  During this transition, legacy relationship metaparameters `rt_requires` and `rt_notify` were replaces with more conventional `require` and `notify`.
+Resource Tree now has elaborate capabilities to generate native puppet resource references.  During this transition, legacy relationship metaparameters `rt_requires` and `rt_notify` were replaced with more conventional `require` and `notify`.
 
-To ease migration from older versions of Resource Tree, the old relationship metaparameters are still supported, however NO Placeholders will be created.  Furthermore users may choose to use either the old or new relationship metaparameters, but not both.  In the event that both old and new relationship metaparameters are used, only the new ones will be honored.
+To ease migration from older versions of Resource Tree, the old relationship metaparameters are still supported, however NO `Placeholder` resources will be created.  Furthermore users may choose to use either the old or new relationship metaparameters, but not both.  In the event that both old and new relationship metaparameters are used, only the new ones will be honored.
 
 ## Reference
 
