@@ -212,7 +212,7 @@ describe 'resource_tree', :type => :class do
     end
     
     it 'should not contain another file with current day' do
-      not contain_file('/tmp/date_test2')
+      should_not contain_file('/tmp/date_test2')
     end
   end
   
@@ -273,7 +273,7 @@ describe 'resource_tree', :type => :class do
           "static_content" => {
             "file" => {
               "/tmp/date_test" => {
-              "content" => Time.now.day,
+                "content" => Time.now.day,
                 "rt_notify" => {
                   "service" => "httpd"
                 }
@@ -905,6 +905,85 @@ describe 'resource_tree', :type => :class do
     it 'should have a service that requires and subscribes to a file' do
       should contain_service('httpd') \
         .that_subscribes_to('File[/etc/httpd/conf.d/10-myserver.conf]')
+    end
+  end
+
+  context 'with default relationship metaparams' do
+    let(:params) {
+      {
+        :default_params => {
+          "file" => {
+            "mode" => '0600',
+            "notify" => 'Service[rsyslogd]'
+          }
+        },
+        :collections => {
+          "static_content" => {
+            "service" => {
+              "rsyslogd" => {
+                "ensure" => "running"
+              }
+            },
+            "file" => {
+              "/tmp/test1" => {
+                "content" => "foo"
+              },
+              "/tmp/test2" => {
+                "content" => "foo"
+              },
+              "/tmp/test3" => {
+                "content" => "foo"
+              },
+              "/tmp/test4" => {
+                "content" => "foo"
+              },
+              "/usr/local/bin/foo" => {
+                "content" => "echo bar",
+                "notify" => [],
+                "rt_resources" => {
+                  "file" => {
+                    "/etc/cron.daily/run_foo" => {
+                      "content" => "/bin/bash /usr/local/bin/foo"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        :apply => ["static_content"]
+      }
+    }
+
+    it 'should contain files with mode=0600 that notifies rsyslogd' do
+      should contain_file('/tmp/test1') \
+        .with_mode('0600') \
+        .that_notifies('Service[rsyslogd]')
+      should contain_file('/tmp/test2') \
+        .with_mode('0600') \
+        .that_notifies('Service[rsyslogd]')
+      should contain_file('/tmp/test3') \
+        .with_mode('0600') \
+        .that_notifies('Service[rsyslogd]')
+      should contain_file('/tmp/test4') \
+        .with_mode('0600') \
+        .that_notifies('Service[rsyslogd]')
+    end
+
+    it 'should not contain a foo executable notifying rsyslogd' do
+      should_not contain_file('/usr/local/bin/foo') \
+        .that_notifies('Service[rsyslogd]')
+    end
+
+    it 'should contain a rsyslogd service' do
+      should contain_service('rsyslogd')
+    end
+
+    it 'should contain a cron to run foo that notifies rsyslogd' do
+      should contain_file('/etc/cron.daily/run_foo') \
+        .with_mode('0600') \
+        .that_requires('File[/usr/local/bin/foo]') \
+        .that_notifies('Service[rsyslogd]')
     end
   end
 end
