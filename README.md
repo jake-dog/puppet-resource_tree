@@ -10,7 +10,7 @@
 6. [Function Aliases](#function-aliases)
 7. [Advanced Usage](#advanced-usage)
 8. [Crazy Advanced Usage](#crazy-advanced-usage)
-9. [Legacy (pre-1.0.0) Support](#legacy-suppory)
+9. [Legacy (pre-1.0.0) Support](#legacy-support)
 10. [Reference](#reference)
 
 ## Overview
