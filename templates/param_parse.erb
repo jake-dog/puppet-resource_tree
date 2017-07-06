@@ -1,6 +1,6 @@
 <%# Create a custom scope for evaluating ruby strings in hierarchy -%>
 <%
-  eval(scope.function_file(['resource_tree/cleanscope.rb']))
+  eval(scope.function_template(['resource_tree/cleanscope.rb']))
   clean = CleanScope.new scope
 -%>
 
