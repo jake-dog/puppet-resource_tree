@@ -8,7 +8,14 @@
 # over from scope, much like Puppet::Parser::TemplateWrapper.
 class CleanScope
   def scope_call(*params)
-    @__scope__.method(:"function_#{__callee__}").call(params)
+    # Detecting future parser is how call_function does it,
+    # but is that strategy robust enough or do we need to use
+    # Puppet.version?
+    if !Puppet.future_parser?(compiler.environment)
+      scope.method(:"function_#{__callee__}").call(params)
+    else
+      scope.call_function(__callee__, params)
+    end
   end
 
   define_method "hiera", instance_method(:scope_call)
