@@ -12,9 +12,19 @@ class CleanScope
     # but is that strategy robust enough or do we need to use
     # Puppet.version?
     if !Puppet.future_parser?(compiler.environment)
-      scope.method(:"function_#{__callee__}").call(params)
+      @__scope__.method(:"function_#{__callee__}").call(params)
     else
-      scope.call_function(__callee__, params)
+      @__scope__.call_function(__callee__, params)
+    end
+  end
+  
+  def compat_call(*args, &block)
+    if __callee__.to_s.starts_with?("function_") and Puppet.future_parser?(compiler.environment)
+      @__scope__.call_function(method.to_s.gsub(/^function_/,""), args, &block)
+    elsif __callee__.to_s == "call_function" and !Puppet.future_parser?(compiler.environment)
+      @__scope__.method(:"function_#{method.to_s}").call(args)
+    else
+      @__scope__.method(__callee__).call(args, &block)
     end
   end
 
@@ -25,7 +35,7 @@ class CleanScope
 
   def scope_eval(code)
     if !@clientcert
-      scope.to_hash.each do |name, value|
+      @__scope__.to_hash.each do |name, value|
         realname = name.gsub(/[^\w]/, "_")
         instance_variable_set("@#{realname}", value)
       end
@@ -35,8 +45,13 @@ class CleanScope
   end
   def initialize(scope)
     @__scope__ = scope
+    @__scope__.instance_methods.each{|m| 
+      if m.to_s.start_with?("function_")
+        define_method m, instance_method(:compat_call)
+      end
+    }
   end
   def scope
-    @__scope__
+    self
   end
 end
