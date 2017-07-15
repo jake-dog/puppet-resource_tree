@@ -8,7 +8,7 @@
 # over from scope, much like Puppet::Parser::TemplateWrapper.
 class CleanScope
   def scope_call(*params)
-    # Detecting future parser is how call_function does it,
+    # Detecting future parser is how call_function() does it,
     # but is that strategy robust enough or do we need to use
     # Puppet.version?
     if !Puppet.future_parser?(compiler.environment)
