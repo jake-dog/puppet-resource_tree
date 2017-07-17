@@ -20,11 +20,11 @@ class CleanScope
   
   def compat_call(*args, &block)
     if __callee__.to_s.starts_with?("function_") and Puppet.future_parser?(compiler.environment)
-      @__scope__.call_function(method.to_s.gsub(/^function_/,""), args, &block)
+      @__scope__.call_function(__callee__.to_s.gsub(/^function_/,""), args, &block)
     elsif __callee__.to_s == "call_function" and !Puppet.future_parser?(compiler.environment)
-      @__scope__.method(:"function_#{method.to_s}").call(args)
+      @__scope__.method(:"function_#{args[0].to_s}").call(args[1..-1])
     else
-      @__scope__.method(__callee__).call(args, &block)
+      @__scope__.method(__callee__).call(*args, &block)
     end
   end
 
@@ -43,13 +43,15 @@ class CleanScope
 
     instance_eval(code)
   end
-  def initialize(scope)
+  def initialize(scope, compiler)
     @__scope__ = scope
-    @__scope__.instance_methods.each{|m| 
-      if m.to_s.start_with?("function_")
-        define_method m, instance_method(:compat_call)
-      end
+    @__scope__.instance_methods.each{|m|
+      define_method m, instance_method(:compat_call)
     }
+    @compiler = compiler
+  end
+  def compiler
+    @compiler
   end
   def scope
     self
