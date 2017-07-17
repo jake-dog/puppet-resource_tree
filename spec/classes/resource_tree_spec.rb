@@ -600,6 +600,33 @@ describe 'resource_tree', :type => :class do
     end
   end
 
+  context 'with "function_" and "call_function" used interchangeably' do
+    let(:params) {
+      {
+        :collections => {
+          "rt_eval_compatiblity" => {
+            "file" => {
+              "/tmp/foo" => {
+                "content" => "rt_eval::scope.function_fqdn_rand([10])"
+              },
+              "/tmp/hello" => {
+                "content" => "rt_eval::scope.call_function('fqdn_rand', [10])"
+              }
+            }
+          }
+        },
+        :apply => ["rt_eval_compatiblity"]
+      }
+    }
+
+    it 'should contain two files' do
+      should contain_file('/tmp/foo') \
+        .with_content(/[0-9]/)
+      should contain_file('/tmp/hello') \
+        .with_content(/[0-9]/)
+    end
+  end
+
   #v1.0 tests########################
   context 'file with notify' do
     let(:params) {
