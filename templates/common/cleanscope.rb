@@ -11,10 +11,10 @@ class CleanScope
     # Detecting future parser is how call_function() does it,
     # but is that strategy robust enough or do we need to use
     # Puppet.version?
-    if !Puppet.future_parser?(compiler.environment)
-      scope.method(:"function_#{__callee__}").call(params)
-    else
+    if scope.respond_to?(:call_function)
       scope.call_function(__callee__, params)
+    else
+      scope.method(:"function_#{__callee__}").call(params)
     end
   end
 

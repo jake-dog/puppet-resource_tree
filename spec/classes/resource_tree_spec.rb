@@ -546,7 +546,7 @@ describe 'resource_tree', :type => :class do
       {
         :collections => {
           "scoped_functions" => {
-            "file" => %({"foo" => hiera('foo'), "hello" => scope.function_hiera(["hello"])}.inject({}) {|r,(k,v)| r.merge({k => {"content" => v.to_s}}) })
+            "file" => %({"foo" => inline_template('bar'), "hello" => scope.function_inline_template(["world"])}.inject({}) {|r,(k,v)| r.merge({k => {"content" => v.to_s}}) })
           }
         },
         :apply => ["scoped_functions"]
@@ -554,12 +554,6 @@ describe 'resource_tree', :type => :class do
     }
 
     it 'should contain two files' do
-      Puppet::Parser::Scope.any_instance.expects(:function_hiera)
-        .with(["foo"])
-        .returns("bar")
-      Puppet::Parser::Scope.any_instance.expects(:function_hiera)
-        .with(["hello"])
-        .returns("world")
       should contain_file('foo') \
         .with_content("bar")
       should contain_file('hello') \
@@ -574,10 +568,10 @@ describe 'resource_tree', :type => :class do
           "rt_eval_scoping" => {
             "file" => {
               "/tmp/foo" => {
-                "content" => "rt_eval::scope.function_hiera(['foo'])"
+                "content" => "rt_eval::scope.function_inline_template(['bar'])"
               },
               "/tmp/hello" => {
-                "content" => "rt_eval::hiera('hello')"
+                "content" => "rt_eval::inline_template('world')"
               }
             }
           }
@@ -587,12 +581,6 @@ describe 'resource_tree', :type => :class do
     }
 
     it 'should contain two files' do
-      Puppet::Parser::Scope.any_instance.expects(:function_hiera)
-        .with(["foo"])
-        .returns("bar")
-      Puppet::Parser::Scope.any_instance.expects(:function_hiera)
-        .with(["hello"])
-        .returns("world")
       should contain_file('/tmp/foo') \
         .with_content("bar")
       should contain_file('/tmp/hello') \
