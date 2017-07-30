@@ -14,6 +14,7 @@ class CleanScope
     if scope.respond_to?(:call_function)
       scope.call_function(__callee__, params)
     else
+      Puppet::Parser::Functions.function(__callee__)
       scope.method(:"function_#{__callee__}").call(params)
     end
   end
