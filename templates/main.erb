@@ -1,7 +1,7 @@
 <%# Create a custom scope for evaluating ruby strings in hierarchy -%>
 <%
   eval(scope.function_template(['resource_tree/common/cleanscope.rb']))
-  clean = CleanScope.new scope
+  clean ||= CleanScope.new scope
 -%>
 
 <%# Reject collections that are not in resource_tree::apply -%>
