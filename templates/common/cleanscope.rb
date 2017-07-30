@@ -8,12 +8,11 @@
 # over from scope, much like Puppet::Parser::TemplateWrapper.
 class CleanScope
   def scope_call(*params)
-    # Detecting future parser is how call_function() does it,
-    # but is that strategy robust enough or do we need to use
-    # Puppet.version?
+    # Compatibility with puppet 4/5 call_function
     if scope.respond_to?(:call_function)
       scope.call_function(__callee__, params)
     else
+      # https://projects.puppetlabs.com/issues/5587
       Puppet::Parser::Functions.function(__callee__)
       scope.method(:"function_#{__callee__}").call(params)
     end
