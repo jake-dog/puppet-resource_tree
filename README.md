@@ -93,7 +93,7 @@ resource_tree::collections:
               owner: 'apache'
               group: 'apache'
               content: 'LoadModule status_module "modules/mod_status.so"'
-              rt_notify:
+              notify:
                 service: 'httpd'
 ```
 
