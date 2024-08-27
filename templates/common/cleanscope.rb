@@ -1,27 +1,29 @@
-# We need to create a clean scope to evaluate any strings
-# Variable collisions only seem to effect jruby.
+# We need to create a clean scope to evaluate any strings.
 # Since we're resetting scope, we also add some convenience
-# methods, like hiera, hiera_hash, without the function_*
-# aliases.  We cannot use alias_method, nor do we support
-# ruby 1.8.7, so "scope" is passed in to preserve compatibility
-# with unaliased methods. Instance variables are also copied
-# over from scope, much like Puppet::Parser::TemplateWrapper.
+# methods like lookup, inline_template, inline_epp, and puppetdb_query.
+# Support for puppet data types is also added via ptype().
+# "scope" is passed in to preserve compatibility with other methods.
+# Instance variables are also copied over from scope.
 class CleanScope
   def scope_call(*params)
-    # Compatibility with puppet 4/5 call_function
     if scope.respond_to?(:call_function)
-      scope.call_function(__callee__, params)
+      scope.call_function(__callee__.to_s, params)
     else
-      # https://projects.puppetlabs.com/issues/5587
+      # This technique is still seemingly valid in puppet7/stdlib, but
+      # it almost certainly never executed.
       Puppet::Parser::Functions.function(__callee__)
-      scope.method(:"function_#{__callee__}").call(params)
+      scope.method("function_#{__callee__}").call(params)
     end
   end
 
-  define_method "hiera", instance_method(:scope_call)
-  define_method "hiera_hash", instance_method(:scope_call)
-  define_method "hiera_array", instance_method(:scope_call)
+  define_method "lookup", instance_method(:scope_call)
   define_method "inline_template", instance_method(:scope_call)
+  define_method "inline_epp", instance_method(:scope_call)
+  define_method "puppetdb_query", instance_method(:scope_call)
+
+  def ptype(type_name)
+    Puppet::Pops::Types::TypeParser.singleton.parse(type_name)
+  end
 
   def scope_eval(code)
     if !@clientcert

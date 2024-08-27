@@ -15,17 +15,17 @@
     Hash[(((v.to_s == v) && clean.scope_eval(v)) || v).map {|a,b| 
       [a, (((b.to_s == b) && clean.scope_eval(b)) || b)] 
     }.map {|a,b| 
-      [ k+"-"+a,
+      [ k+"["+a+"]",
         {
           "type" => k,
-          "rt_before" => b.fetch("before", defaults.fetch(k,{}).fetch("before",[])),
-          "rt_subscribe" => b.fetch("subscribe", defaults.fetch(k,{}).fetch("subscribe",[])),
-          "rt_notify" => b.fetch("notify", b.fetch("rt_notify", defaults.fetch(k,{}).fetch("notify",[]))),
-          "rt_requires" => [b.fetch("require", b.fetch("rt_requires", defaults.fetch(k,{}).fetch("require",[]))), @name],
+          "rt_before" => [b.fetch("before", defaults.fetch(k,{}).fetch("before",[]))].flatten,
+          "rt_subscribe" => [b.fetch("subscribe", defaults.fetch(k,{}).fetch("subscribe",[]))].flatten,
+          "rt_notify" => [b.fetch("notify", defaults.fetch(k,{}).fetch("notify",[]))].flatten,
+          "rt_require" => [b.fetch("require", defaults.fetch(k,{}).fetch("require",[]))].flatten + [@name],
           "rt_resources" => b.fetch("rt_resources",nil),
           "params" => {
             a => defaults.fetch(k,{}).merge(b).reject {|x,y|
-              ["rt_resources", "rt_requires", "rt_notify",
+              ["rt_resources", "rt_require", "rt_notify",
                "before", "notify", "subscribe", "require"].include? x 
             }
           }
