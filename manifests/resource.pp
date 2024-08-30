@@ -29,7 +29,7 @@ define resource_tree::resource (
     Optional[Variant[String[1], Array[String[1]]]] $rt_subscribe = [],
     Optional[Variant[String[1], Array[String[1]]]] $rt_require   = [],
     Optional[Variant[String[1], Array[String[1]]]] $rt_notify    = [],
-    Optional[Hash] $rt_resources                                 = undef,
+    Optional[Variant[Hash, String]] $rt_resources                = undef,
 ) {
   if $rt_resources {
       $uniq_resources = parseyaml(template('resource_tree/resource.erb'))
