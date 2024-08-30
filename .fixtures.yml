@@ -2,6 +2,12 @@ fixtures:
   repositories:
     stdlib:
       repo: "https://github.com/puppetlabs/puppetlabs-stdlib.git"
-      ref: '4.3.0'
+      ref: 'v8.2.0'
+    host_core:
+      repo: https://github.com/puppetlabs/puppetlabs-host_core.git
+      puppet_version: ">= 1.0.1"
+    cron_core:
+      repo: https://github.com/puppetlabs/puppetlabs-cron_core.git
+      puppet_version: ">= 1.1.0"
   symlinks:
     resource_tree: "#{source_dir}"
