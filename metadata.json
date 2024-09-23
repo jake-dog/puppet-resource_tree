@@ -2,42 +2,75 @@
   "name": "jake-resource_tree",
   "version": "2.0.0",
   "author": "jake",
-  "license": "Apache-2.0",
   "summary": "Create Puppet resources dynamically in Hiera",
+  "license": "Apache-2.0",
   "source": "https://github.com/jake-dog/puppet-resource_tree",
   "project_page": "https://github.com/jake-dog/puppet-resource_tree",
   "issues_url": "https://github.com/jake-dog/puppet-resource_tree/issues",
-  "tags": [],
+  "dependencies": [
+    {
+      "name": "puppetlabs/stdlib",
+      "version_requirement": ">=8.2.0 <10.0.0"
+    }
+  ],
   "operatingsystem_support": [
     {
-      "operatingsystem":"RedHat",
-      "operatingsystemrelease":[ "6", "7", "8", "9" ]
+      "operatingsystem": "RedHat",
+      "operatingsystemrelease": [
+        "6",
+        "7",
+        "8",
+        "9"
+      ]
     },
     {
-      "operatingsystem":"CentOS",
-      "operatingsystemrelease":[ "6", "7", "8" ]
+      "operatingsystem": "CentOS",
+      "operatingsystemrelease": [
+        "6",
+        "7",
+        "8"
+      ]
     },
     {
-      "operatingsystem":"Debian",
-      "operatingsystemrelease":[ "10", "11", "12" ]
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "10",
+        "11",
+        "12"
+      ]
     },
     {
       "operatingsystem": "Ubuntu",
-      "operatingsystemrelease": [ "20.04", "22.04" ]
+      "operatingsystemrelease": [
+        "20.04",
+        "22.04"
+      ]
     },
     {
       "operatingsystem": "Rocky",
-      "operatingsystemrelease": [ "8", "9" ]
+      "operatingsystemrelease": [
+        "8",
+        "9"
+      ]
     },
     {
       "operatingsystem": "AlmaLinux",
-      "operatingsystemrelease": [ "8", "9" ]
+      "operatingsystemrelease": [
+        "8",
+        "9"
+      ]
     }
   ],
-  "dependencies": [
-    { "name": "puppetlabs/stdlib", "version_requirement": ">=8.2.0 <10.0.0" }
-  ],
   "requirements": [
-    { "name": "puppet", "version_requirement": ">=6.0.0 <9.0.0" }
-  ]
+    {
+      "name": "puppet",
+      "version_requirement": ">=6.0.0 <9.0.0"
+    }
+  ],
+  "tags": [
+
+  ],
+  "pdk-version": "3.3.0",
+  "template-url": "pdk-default#3.3.0",
+  "template-ref": "tags/3.3.0-0-g5d17ec1"
 }
