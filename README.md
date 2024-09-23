@@ -1,5 +1,3 @@
-# Resource Tree Puppet Module [![Build Status](https://travis-ci.org/jake-dog/puppet-resource_tree.svg?branch=master)](https://travis-ci.org/jake-dog/puppet-resource_tree)
-
 #### Table of Contents
 
 1. [Overview](#overview)
