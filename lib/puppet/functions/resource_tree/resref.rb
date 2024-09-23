@@ -16,15 +16,14 @@
 #   resref('File[/tmp]', 'Exec[daemon reload]') == [File["/tmp"], Exec["daemon reload"]]
 #
 Puppet::Functions.create_function(:'resource_tree::resref') do
-
   dispatch :resref do
     repeated_param 'String', :args
   end
 
   def resref(*args)
-    args.map{|res|
+    args.map do |res|
       type_name, title = Puppet::Resource.type_and_title(res, nil)
       closure_scope.findresource(type_name, title) || Puppet::Resource.new(type_name, title)
-    }
+    end
   end
 end

@@ -11,9 +11,9 @@ describe 'resource_tree::resref' do
       PRECOND
     end
 
-    filefoo = Puppet::Resource.new(:file, "foo")
-    filebar = Puppet::Resource.new(:file, "bar")
-    packagebiz = Puppet::Resource.new(:package, "biz")
+    filefoo = Puppet::Resource.new(:file, 'foo')
+    filebar = Puppet::Resource.new(:file, 'bar')
+    packagebiz = Puppet::Resource.new(:package, 'biz')
 
     it { is_expected.to run.with_params('File[foo]', 'Package[biz]').and_return([filefoo, packagebiz]) }
     it { is_expected.to run.with_params('Package[biz]').and_return([packagebiz]) }
@@ -22,9 +22,9 @@ describe 'resource_tree::resref' do
 
   ## Need to add tests for when the resource is already in the catalog
   context 'with undefined puppet resources' do
-    filefoo = Puppet::Resource.new(:file, "foo")
-    filebar = Puppet::Resource.new(:file, "bar")
-    packagebiz = Puppet::Resource.new(:package, "biz")
+    filefoo = Puppet::Resource.new(:file, 'foo')
+    filebar = Puppet::Resource.new(:file, 'bar')
+    packagebiz = Puppet::Resource.new(:package, 'biz')
 
     it { is_expected.to run.with_params('File[foo]', 'Package[biz]').and_return([filefoo, packagebiz]) }
     it { is_expected.to run.with_params('Package[biz]').and_return([packagebiz]) }

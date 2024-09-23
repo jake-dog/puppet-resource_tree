@@ -16,28 +16,30 @@ class CleanScope
     end
   end
 
-  define_method "lookup", instance_method(:scope_call)
-  define_method "inline_template", instance_method(:scope_call)
-  define_method "inline_epp", instance_method(:scope_call)
-  define_method "puppetdb_query", instance_method(:scope_call)
+  define_method 'lookup', instance_method(:scope_call)
+  define_method 'inline_template', instance_method(:scope_call)
+  define_method 'inline_epp', instance_method(:scope_call)
+  define_method 'puppetdb_query', instance_method(:scope_call)
 
   def ptype(type_name)
     Puppet::Pops::Types::TypeParser.singleton.parse(type_name)
   end
 
   def scope_eval(code)
-    if !@clientcert
+    unless @clientcert
       scope.to_hash.each do |name, value|
-        realname = name.gsub(/[^\w]/, "_")
+        realname = name.gsub(%r{[^\w]}, '_')
         instance_variable_set("@#{realname}", value)
       end
     end
 
     instance_eval(code)
   end
+
   def initialize(scope)
     @__scope__ = scope
   end
+
   def scope
     @__scope__
   end
