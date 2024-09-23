@@ -194,7 +194,7 @@ resource_tree::collections:
             'file' => Hash[(1..5).map {|n|
               [
                 "/tmp/test/test-file-#{n}",
-                { "content" => rand(500).to_s }
+                { 'content' => rand(500).to_s }
               ]
             }]
           }
@@ -202,10 +202,10 @@ resource_tree::collections:
     host: |
       
       # Add five host entries
-      Hash[(1..5).map {|n|
+      Hash[(1..5).map { |n|
         [
           "test-node-0#{n}",
-          {"ip" => "192.168.1.#{n}", "ensure" => "present" }
+          { 'ip' => "192.168.1.#{n}", 'ensure' => 'present' }
         ]
       }]
 ```
@@ -234,15 +234,15 @@ resource_tree::collections:
     haproxy::balancermember: |
       node_query = 'inventory[certname,facts.ipaddress]{ environment = "%{environment}" and app = "webserver" }'
       member_ip_by_cert = puppetdb_query(node_query).map{|fact|
-        { fact["certname"] => fact["facts.ipaddress"] }
+        { fact['certname'] => fact['facts.ipaddress'] }
       }.reduce({}, :merge)
       {
-        "webservers" => {
-          "listening_service" => 'webservers',
-          "ports"             => '80',
-          "server_names"      => member_ip_by_cert.keys.sort.map{|h| h.split(".")[0] },
-          "ipaddresses"       => member_ip_by_cert.keys.sort.map{|h| member_ip_by_cert[h] },
-          "options"           => [ 'check' ]
+        'webservers' => {
+          'listening_service' => 'webservers',
+          'ports'             => '80',
+          'server_names'      => member_ip_by_cert.keys.sort.map{|h| h.split('.')[0] },
+          'ipaddresses'       => member_ip_by_cert.keys.sort.map{|h| member_ip_by_cert[h] },
+          'options'           => [ 'check' ]
         }
       }
 ```
