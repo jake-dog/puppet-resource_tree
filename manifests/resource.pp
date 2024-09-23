@@ -23,17 +23,17 @@
 #   Set resources as requiring this resource
 #
 define resource_tree::resource (
-    String $type,
-    Hash $params,
-    Optional[Variant[String[1], Array[String[1]]]] $rt_before    = [],
-    Optional[Variant[String[1], Array[String[1]]]] $rt_subscribe = [],
-    Optional[Variant[String[1], Array[String[1]]]] $rt_require   = [],
-    Optional[Variant[String[1], Array[String[1]]]] $rt_notify    = [],
-    Optional[Variant[Hash, String]] $rt_resources                = undef,
+  String $type,
+  Hash $params,
+  Variant[String[1], Array[String[1]]] $rt_before    = [],
+  Variant[String[1], Array[String[1]]] $rt_subscribe = [],
+  Variant[String[1], Array[String[1]]] $rt_require   = [],
+  Variant[String[1], Array[String[1]]] $rt_notify    = [],
+  Optional[Variant[Hash, String]] $rt_resources      = undef,
 ) {
   if $rt_resources {
-      $uniq_resources = parseyaml(template('resource_tree/resource.erb'))
-      create_resources('resource_tree::resource', $uniq_resources)
+    $uniq_resources = parseyaml(template('resource_tree/resource.erb'))
+    create_resources('resource_tree::resource', $uniq_resources)
   }
 
   # Allow arbitrary commands and nested yaml
@@ -62,6 +62,7 @@ define resource_tree::resource (
   }
 
   create_resources($type, $parsed_params, {
-    'require' => $require, 'notify' => $notify,
-    'subscribe' => $subscribe, 'before' => $before })
+      'require' => $require, 'notify' => $notify,
+      'subscribe' => $subscribe, 'before' => $before
+  })
 }

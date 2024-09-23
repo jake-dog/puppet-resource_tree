@@ -32,7 +32,7 @@ class resource_tree (
   $defaults = lookup('resource_tree::default_params', Hash, 'hash', $default_params)
 
   if $allcollections.is_a(Hash) and $allapply.is_a(Array) and (size(intersection($allapply, keys($allcollections))) > 0) {
-      $uniq_resources = parseyaml(template('resource_tree/main.erb'))
-      create_resources('resource_tree::resource', $uniq_resources, {})
+    $uniq_resources = parseyaml(template('resource_tree/main.erb'))
+    create_resources('resource_tree::resource', $uniq_resources, {})
   }
 }
