@@ -191,23 +191,23 @@ resource_tree::collections:
         
           # Create five files in /tmp/test, each with a random number
           {
-            'file' => Hash[(1..5).map {|n|
+            'file' => (1..5).map { |n|
               [
                 "/tmp/test/test-file-#{n}",
-                { 'content' => rand(500).to_s }
+                { 'content' => rand(500).to_s },
               ]
-            }]
+            }.to_h
           }
           
     host: |
       
       # Add five host entries
-      Hash[(1..5).map { |n|
+      (1..5).map { |n|
         [
           "test-node-0#{n}",
-          { 'ip' => "192.168.1.#{n}", 'ensure' => 'present' }
+          { 'ip' => "192.168.1.#{n}", 'ensure' => 'present' },
         ]
-      }]
+      }.to_h
 ```
 
 Calling puppet functions from ERB usually requires a [complex syntax](https://www.puppet.com/docs/puppet/7/lang_template_erb#puppet_functions_templates).  Resource Tree provides four common functions with their traditional puppet syntax: `lookup`, `inline_template`, `inline_epp` and `puppetdb_query`.  The special function `ptype` can be used to evaluate [puppet data type](https://www.puppet.com/docs/puppet/7/lang_data_type.html) strings.
