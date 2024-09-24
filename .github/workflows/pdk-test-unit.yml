@@ -1,4 +1,4 @@
-name: Run pdk test unit and validate
+name: Puppet
 
 on:
   - push

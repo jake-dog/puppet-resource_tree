@@ -1,3 +1,8 @@
+# resource_tree
+
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://github.com/jake-dog/puppet-resource_tree/blob/master/LICENSE)
+![tests](https://github.com/jake-dog/puppet-resource_tree/actions/workflows/pdk-test-unit.yml/badge.svg?branch=master)
+
 #### Table of Contents
 
 1. [Overview](#overview)
