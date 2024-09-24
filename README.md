@@ -12,8 +12,7 @@
 5. [Default Parameters](#default-parameters)
 6. [Advanced Usage](#advanced-usage)
 7. [Crazy Advanced Usage](#crazy-advanced-usage)
-8. [Legacy (pre-1.0.0) Support](#legacy-support)
-9. [Reference](#reference)
+8. [Migrating from v1.x](#migrating-from-v1x)
 
 ## Overview
 
@@ -288,7 +287,7 @@ resource_tree::collections:
       }]
 ```
 
-## Legacy Support
+## Migrating from v1.x
 
 The `str2resource` function was added to puppet stdlib in v8.2.0 and set the standard for defining puppet resources as strings.  Resource Tree v2.0+ now exclusively utilizes this resource string format, and the different syntax options available in prior versions are no longer supported.  Relationship metaparameters therefore must be either a resource string, or list of resource strings.  The `resref` function is now namespaced to `resource_tree::resref`.
 
