@@ -11,26 +11,24 @@ jobs:
     - name: Clone repository
       uses: actions/checkout@v2
 
-    - name: Install native gem deps
+    - name: "Setup ruby"
+      uses: "ruby/setup-ruby@v1"
+      with:
+        ruby-version: '3.2'
+        bundler-cache: true
+
+    - name: "Bundle environment"
       run: |
-        apt update && apt-get install -y gcc libffi-dev make
+        echo ::group::bundler environment
+        bundle env
+        echo ::endgroup::
 
-    - name: Run unit tests
-      uses: puppets-epic-show-theatre/action-pdk-test-unit@v1
-      with:
-        puppet-version: ""
-        # [optional]
-        # A string indicating the Puppet version to validate against, such as "5.4.2" or "5.5".
-        pe-version: ""
-        # [optional]
-        # A string indicating the PE version to validate against, such as "2017.3.5" or "2018.1".
+    - name: "Run Static & Syntax Tests"
+      run: |
+        bundle exec rake syntax lint metadata_lint check:symlinks check:git_ignore check:dot_underscore check:test_file rubocop
+        bundle exec dependency-checker metadata.json
 
-    - name: Run pdk validate
-      uses: puppets-epic-show-theatre/action-pdk-validate@v1
-      with:
-        puppet-version: ""
-        # [optional]
-        # A string indicating the Puppet version to validate against, such as "5.4.2" or "5.5".
-        pe-version: ""
-        # [optional]
-        # A string indicating the PE version to validate against, such as "2017.3.5" or "2018.1".
+    - name: "Run tests"
+      run: |
+        bundle exec rake parallel_spec
+
